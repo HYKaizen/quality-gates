@@ -1,0 +1,77 @@
+:root{font-family:system-ui,-apple-system,sans-serif;color:#172c36;background:#f3f6f7;font-size:15px}
+*{box-sizing:border-box}
+body{margin:0}
+header{padding:20px 4vw;background:#163c43;color:white;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header>div{display:flex;align-items:center;gap:16px}
+.logo{background:#c4ed9a;color:#163c43;border-radius:9px;padding:9px;font-weight:800}
+small,.muted{color:#60747e}
+header small{color:#b8cccd}
+main{max-width:1300px;margin:30px auto;padding:0 24px}
+h1{font-size:28px;letter-spacing:-.8px}
+h2{font-size:20px}
+h3{font-size:16px;margin:0 0 8px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:1px solid #cad5d9;background:white;color:#213f49;border-radius:7px;padding:9px 13px}
+button:hover{background:#e6efef}
+button:disabled{opacity:.5;cursor:wait}
+.primary{background:#176a60;color:white;border-color:#176a60}
+.danger{color:#a82835}
+input,select,textarea{padding:10px;border:1px solid #bbcbd0;border-radius:6px;width:100%;background:white}
+textarea{min-height:90px}
+label{display:block;margin:15px 0 6px}
+nav,.toolbar,.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0}
+nav button.active{background:#163c43;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.card,.panel,details{background:white;border:1px solid #dce4e7;border-radius:10px;padding:20px;margin-bottom:14px}
+.card button{margin-top:15px}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin:25px 0}
+.stats strong{font-size:26px;display:block}
+.badge{font-size:12px;padding:4px 8px;background:#ecf0f2;border-radius:5px;display:inline-block}
+.pass,.na{background:#e0f2e5;color:#256644}
+.rejected{background:#ffe4e5;color:#922c39}
+.hold,.verification{background:#fff0ce;color:#805d13}
+.item{padding:18px 0;border-bottom:1px solid #e5ebed}
+.item:last-child{border:0}
+.item-head{display:flex;justify-content:space-between;gap:14px}
+.item p{max-width:850px;line-height:1.5}
+.item small{display:block;margin:5px 0}
+.actions button{font-size:13px}
+summary{cursor:pointer;font-weight:650}
+dialog{max-width:620px;width:94%;border:0;border-radius:12px;padding:25px;max-height:90vh;box-shadow:0 20px 80px #163c4344}
+dialog::backdrop{background:#152f3a88}
+footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+#message:not(:empty){background:#fff0ce;padding:12px 4vw}
+#form-error{color:#ac2333}
+.auth{max-width:430px;margin:60px auto}
+.history{border-left:3px solid #b5ceca;padding:10px 20px;margin:10px 0}
+.history pre{white-space:pre-wrap;font-size:12px;overflow-wrap:anywhere}
+.split{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.progress{height:6px;background:#e7edef;margin:15px 0;border-radius:4px;overflow:hidden}
+.progress>div{height:100%;background:#278573}
+a{color:#176a60}
+#identity{font-size:13px}
+.signature-box{margin-top:18px;padding:15px;border:1px solid #90aaa8;border-radius:8px;background:#f2f8f7}
+.signature-box p{margin:7px 0;color:#526d70}
+.signed{color:#176a60;font-weight:650}
+.operation{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.operation .actions{margin:0}
+.operation-status{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:14px 16px;background:#e9f2f1;border-radius:9px}
+.operation-status small{display:block;margin-top:5px}
+.checkbox{display:flex;align-items:center;gap:9px}
+.checkbox input{width:auto}
+.operation-list{margin-bottom:28px}
+.operation-card{padding-bottom:10px}
+.operation-card .admin-controls{border:0;border-top:1px solid #dce4e7;border-radius:0;margin:14px 0 0;padding:14px 0 0}
+.admin-control{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:11px 0;border-bottom:1px solid #e5ebed}
+.admin-control:last-child{border-bottom:0}
+.admin-control small{display:block;margin-top:4px}
+@media(max-width:650px){main{padding:0 14px}
+.item-head,.split{display:block}
+.operation,.operation-status{display:block}
+.operation .actions{margin-top:12px}
+.admin-control{align-items:flex-start}
+.stats{gap:18px}
+.card,.panel,details{padding:15px}
+h1{font-size:23px}
+header{padding:15px}
+}

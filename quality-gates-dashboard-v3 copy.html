@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+<title>QualityGates Pro™</title>
+<style>
+:root{--navy:#1a1a2e;--blue:#0d47a1;--green:#2e7d32;--red:#c62828;--orange:#e65100;--purple:#6a1b9a;--gray:#546e7a;--yellow:#f9a825;--bg:#f5f6fa;--card:#fff;--shadow:0 2px 12px rgba(0,0,0,.08);--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#333;-webkit-tap-highlight-color:transparent}
+.topbar{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:16px;font-weight:700}.topbar h1 span{opacity:.6;font-weight:400;font-size:12px;display:block}
+.topbar-actions{display:flex;gap:6px}
+.topbar-actions button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;min-height:44px;min-width:44px}
+.view{display:none;padding:14px;max-width:960px;margin:0 auto}.view.active{display:block}
+.btn{display:inline-block;padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;min-height:44px}
+.btn-primary{background:var(--blue);color:#fff}.btn-danger{background:var(--red);color:#fff}
+.btn-green{background:var(--green);color:#fff}.btn-orange{background:var(--orange);color:#fff}
+.btn-yellow{background:var(--yellow);color:#fff}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-gray{background:#78909c;color:#fff}.btn-navy{background:var(--navy);color:#fff}
+.btn-sm{padding:8px 14px;font-size:12px}.btn-block{display:block;width:100%;text-align:center}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* HOME SCREEN */
+.home-actions{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.home-actions button{flex:1;min-width:120px}
+.trailer-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-left:5px solid transparent;transition:transform .1s}
+.trailer-card:active{transform:scale(.98)}
+.trailer-card.approved{border-left-color:var(--green)}
+.trailer-card.has-rejections{border-left-color:var(--red)}
+.trailer-card.has-holds{border-left-color:var(--yellow)}
+.trailer-card.has-letgos{border-left-color:var(--blue)}
+.trailer-card.in-progress{border-left-color:#bbb}
+.trailer-card .info h3{font-size:15px;color:var(--navy)}.trailer-card .info p{font-size:12px;color:#888;margin-top:2px}
+.trailer-card .pct{font-size:22px;font-weight:700}
+.progress-bar{width:100px;height:5px;background:#e0e0e0;border-radius:3px;margin-top:3px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:3px}
+.status-pills{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.pill{font-size:10px;padding:2px 6px;border-radius:10px;background:#f0f0f0;color:#666}
+
+/* FORM */
+.form-card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.form-card h2{font-size:17px;margin-bottom:14px;color:var(--navy)}
+.fg{margin-bottom:12px}.fg label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;outline:none;min-height:44px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+
+/* MAIN TABS */
+.main-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0;-webkit-overflow-scrolling:touch;border-bottom:2px solid #e0e0e0;margin-bottom:10px}
+.main-tab{flex-shrink:0;padding:8px 14px;border-radius:8px 8px 0 0;background:#e8eaf6;color:var(--navy);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:44px;display:flex;align-items:center}
+.main-tab.active{background:var(--navy);color:#fff}
+
+/* GATE TABS */
+.gate-tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;margin-bottom:8px}
+.gate-tab{flex-shrink:0;padding:8px 14px;border-radius:18px;background:#e8eaf6;color:var(--navy);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;position:relative;min-height:44px;display:flex;align-items:center;gap:4px}
+.gate-tab.active{background:var(--navy);color:#fff}
+.gate-tab .badge{position:absolute;top:-3px;right:-3px;color:#fff;font-size:9px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* INSPECTOR BAR */
+.insp-bar{background:#e3f2fd;border-radius:10px;padding:12px;margin:8px 0;position:sticky;top:60px;z-index:90;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.insp-bar label{font-weight:600;font-size:12px;color:var(--blue);display:block;margin-bottom:6px}
+.insp-bar select{width:100%;padding:10px;border:2px solid #90caf9;border-radius:8px;font-size:14px;background:#fff}
+.insp-bar .change-link{font-size:11px;color:var(--blue);text-decoration:underline;cursor:pointer;margin-top:4px;display:inline-block}
+
+/* GATE TIMER */
+.timer-bar{background:#f3e5f5;border-radius:8px;padding:10px 12px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.timer-bar .time{font-family:monospace;font-size:16px;font-weight:700;color:var(--purple)}
+
+/* SECTION CARDS */
+.section-controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.section-card{background:var(--card);border-radius:10px;margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden;transition:all .2s}
+.section-header{background:#e8eaf6;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;min-height:44px}
+.section-header h4{font-size:13px;color:var(--navy);font-weight:700;flex:1}
+.section-progress{font-size:11px;color:#666;background:#fff;padding:3px 8px;border-radius:10px}
+.section-icons{display:flex;gap:4px;margin-left:8px}
+.section-content{display:none;padding:8px;background:#fafafa}
+.section-content.expanded{display:block}
+.section-card.expanded .section-header{background:var(--navy);color:#fff}
+.section-card.expanded .section-header h4{color:#fff}
+.section-card.expanded .section-progress{background:rgba(255,255,255,.2);color:#fff}
+
+/* CHECK ITEMS */
+.ci{background:var(--card);border-radius:10px;padding:12px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.04);border-left:4px solid #ddd;transition:all .2s}
+.ci.st-pass{border-left-color:var(--green);background:#f1f8e9}
+.ci.st-rejected{border-left-color:var(--red);background:#ffebee}
+.ci.st-hold{border-left-color:var(--yellow);background:#fffde7}
+.ci.st-letgo{border-left-color:var(--blue);background:#e3f2fd}
+.ci .ci-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.ci .ci-num{font-weight:700;color:var(--blue);font-size:12px;min-width:36px;background:#e3f2fd;padding:2px 6px;border-radius:4px}
+.ci .ci-desc{flex:1;font-size:13px;line-height:1.4}
+.ci .ci-actions{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ci .ci-actions button{flex:1;min-width:70px;padding:8px 6px;font-size:11px;border-radius:6px;border:2px solid #e0e0e0;background:#fff;cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .1s}
+.ci .ci-actions button:active{transform:scale(.95)}
+.ci .ci-actions button.active-pass{background:var(--green);color:#fff;border-color:var(--green)}
+.ci .ci-actions button.active-rejected{background:var(--red);color:#fff;border-color:var(--red)}
+.ci .ci-actions button.active-hold{background:var(--yellow);color:#fff;border-color:var(--yellow)}
+.ci .ci-actions button.active-letgo{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ci .ci-meta{font-size:10px;color:#888;margin-top:6px}
+.ci .ci-notes{margin-top:8px}
+.ci .ci-notes input{width:100%;padding:8px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px}
+.ci .ci-media-btns{margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ci .ci-media-btn{background:var(--gray);color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.ci .ci-media-btn.recording{background:var(--red);animation:pulse 1s infinite}
+.ci .ci-media-counts{font-size:11px;color:#666;margin-left:8px}
+.ci .ci-media-counts span{margin:0 4px}
+
+/* MEDIA PREVIEW MODAL */
+.media-preview-modal .preview-img{width:100%;border-radius:8px;margin-bottom:12px;max-height:60vh;object-fit:contain}
+.media-preview-modal video{width:100%;border-radius:8px;max-height:60vh}
+
+/* STATUS BOXES */
+.status-box{margin-top:10px;padding:10px;border-radius:8px;font-size:12px}
+.status-box.rejected{background:#ffebee;border:1px solid #ef9a9a}
+.status-box.hold{background:#fffde7;border:1px solid #ffe082}
+.status-box.letgo{background:#e3f2fd;border:1px solid #90caf9}
+.status-box .sb-title{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.status-box .sb-meta{font-size:10px;color:#666;margin-bottom:6px}
+.status-box .sb-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+/* BANNERS */
+.banner{padding:12px 14px;border-radius:10px;margin:8px 0;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;color:#fff;min-height:44px}
+.banner .count{background:rgba(255,255,255,.3);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.banner-rejections{background:linear-gradient(135deg,var(--red),#b71c1c)}
+.banner-holds{background:linear-gradient(135deg,var(--yellow),#f57f17);color:#333}
+.banner-letgos{background:linear-gradient(135deg,var(--blue),#1565c0)}
+
+/* SUMMARY TILES */
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+@media(min-width:600px){.summary-row{grid-template-columns:repeat(6,1fr)}}
+.sum-tile{background:var(--card);border-radius:10px;padding:10px;text-align:center;box-shadow:var(--shadow);min-height:60px;display:flex;flex-direction:column;justify-content:center}
+.sum-tile .num{font-size:22px;font-weight:700}.sum-tile .lbl{font-size:10px;color:#888;margin-top:2px}
+.sum-tile.pass .num{color:var(--green)}
+.sum-tile.rejected .num{color:var(--red)}
+.sum-tile.hold .num{color:var(--yellow)}
+.sum-tile.letgo .num{color:var(--blue)}
+.sum-tile.pending .num{color:#999}
+
+/* APPROVAL */
+.approval-bar{background:linear-gradient(135deg,var(--navy),#283593);color:#fff;border-radius:12px;padding:16px;margin:12px 0;text-align:center}
+.approval-bar h3{font-size:16px;margin-bottom:6px}.approval-bar .sub{font-size:12px;opacity:.8;margin-bottom:12px}
+.approval-bar .timestamp{font-size:11px;opacity:.7;margin-top:8px}
+
+/* REWORK DASHBOARD */
+.rework-section{background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow)}
+.rework-section h3{font-size:14px;color:var(--navy);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e0e0e0}
+.rework-item{padding:10px;background:#f5f5f5;border-radius:8px;margin-bottom:6px;border-left:3px solid var(--orange)}
+.rework-item .ri-header{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.rework-item .ri-desc{font-size:12px;color:#555;margin-bottom:4px}
+.rework-item .ri-meta{font-size:10px;color:#888}
+.rework-item .ri-actions{display:flex;gap:6px;margin-top:8px}
+
+/* PUNCH LIST */
+.punch-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.punch-filters button{flex:1;min-width:80px}
+.punch-filters button.active{background:var(--navy)}
+.punch-item{padding:12px;background:var(--card);border-radius:10px;margin-bottom:8px;box-shadow:var(--shadow);border-left:4px solid var(--blue)}
+.punch-item.resolved{border-left-color:var(--green);opacity:.7}
+.punch-item .pi-header{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.punch-item .pi-reason{font-size:11px;color:var(--blue);background:#e3f2fd;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:6px}
+.punch-item .pi-meta{font-size:10px;color:#888;margin-bottom:8px}
+.punch-item .pi-notes{font-size:12px;color:#555;margin-bottom:8px;padding:8px;background:#f5f5f5;border-radius:6px}
+
+/* PHOTO/VIDEO GRID */
+.photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+@media(min-width:600px){.photo-grid{grid-template-columns:repeat(3,1fr)}}
+.photo-card{background:var(--card);border-radius:8px;overflow:hidden;box-shadow:var(--shadow);position:relative}
+.photo-card img{width:100%;height:120px;object-fit:cover;cursor:pointer}
+.photo-card video{width:100%;height:120px;object-fit:cover;cursor:pointer}
+.photo-card .pc-info{padding:6px;font-size:10px;color:#666}
+.photo-card .play-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:32px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.5);pointer-events:none}
+.photo-upload{border:2px dashed #ccc;border-radius:8px;padding:30px 20px;text-align:center;cursor:pointer;color:#888;font-size:13px;min-height:100px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
+.photo-upload:hover{border-color:var(--blue);color:var(--blue)}
+
+/* FEATURES */
+.feat-list{list-style:none}.feat-list li{padding:10px 12px;background:var(--card);border-radius:8px;margin:4px 0;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.feat-list li::before{content:'✅';font-size:14px}
+
+/* BUILDSHEET */
+.bs-card{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);margin-bottom:10px}
+.bs-card h3{font-size:14px;color:var(--navy);margin-bottom:8px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:20px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:modalIn .2s}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.modal h2{font-size:16px;color:var(--navy);margin-bottom:14px}
+.modal .form-group{margin-bottom:14px}
+.modal .form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#555}
+.modal .form-group select,.modal .form-group input,.modal .form-group textarea{width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;min-height:44px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions button{flex:1}
+
+/* HISTORY */
+.history-item{padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:11px;display:flex;gap:8px;align-items:flex-start}
+.history-item .time{color:#999;min-width:60px;font-size:10px}
+.history-item .icon{font-size:14px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
+.empty-state .icon{font-size:48px;margin-bottom:12px;opacity:.5}
+
+/* FLOATING ACTION */
+.fab{position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.3);cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center}
+
+/* JUMP BUTTON */
+.jump-btn{background:#f0f0f0;border:none;padding:8px 12px;border-radius:6px;font-size:11px;cursor:pointer;color:#555}
+
+/* HAKAN BADGE */
+.hakan-badge{background:linear-gradient(135deg,var(--purple),#8e24aa);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🛡️ QualityGates Pro™</h1>
+  <div class="topbar-actions">
+    <button onclick="showView('list')">🏠</button>
+    <button onclick="showReworkDashboard()">🔧</button>
+    <button onclick="showPunchList()">📋</button>
+    <button onclick="exportData()">📤</button>
+  </div>
+</div>
+
+<!-- HOME / TRAILER LIST -->
+<div id="view-list" class="view active">
+  <div class="home-actions">
+    <button class="btn btn-primary" onclick="showView('new')">+ New Trailer</button>
+    <button class="btn btn-navy" onclick="showReworkDashboard()">🔧 Rework Dashboard</button>
+    <button class="btn btn-blue" onclick="showPunchList()">📋 Punch List</button>
+  </div>
+  <div id="tlist"></div>
+  <div id="no-t" class="empty-state" style="display:none">
+    <div class="icon">🚐</div>
+    <p>No trailers yet.<br>Tap <b>+ New Trailer</b> to start</p>
+  </div>
+</div>
+
+<!-- NEW TRAILER -->
+<div id="view-new" class="view">
+  <div class="form-card">
+    <h2>🆕 New Trailer Card</h2>
+    <div class="fg"><label>Customer Name *</label><input id="i-cust" placeholder="John Smith"></div>
+    <div class="fg"><label>Inventory Number *</label><input id="i-inv" placeholder="ET-2026-0142"></div>
+    <div class="fg"><label>Trailer Model *</label>
+      <select id="i-model">
+        <option value="">Select...</option>
+        <option>ET 17</option><option>ET 19</option><option>ET 21</option>
+        <option>ET 21NE</option><option>ET 23</option><option>ET 25</option>
+        <option value="__c">Custom...</option>
+      </select>
+    </div>
+    <div class="fg" id="cg" style="display:none"><label>Custom Model</label><input id="i-cmod"></div>
+    <div class="fg"><label>Buildsheet Notes (optional)</label><textarea id="i-bs" rows="3" placeholder="Special options, customer requests, deviations..."></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-gray btn-sm" onclick="showView('list')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="createT()">Create Trailer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRAILER DETAIL -->
+<div id="view-detail" class="view">
+  <div id="d-hdr"></div>
+  <div class="summary-row" id="d-sum"></div>
+  <div id="d-banners"></div>
+  <div id="d-approval"></div>
+  <div class="main-tabs" id="main-tabs"></div>
+  <div id="main-content"></div>
+</div>
+
+<!-- REWORK DASHBOARD -->
+<div id="view-rework" class="view">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <button class="btn btn-gray btn-sm" onclick="showView('list')">← Back</button>
+    <h2 style="font-size:18px;color:var(--navy)">🔧 Rework Dashboard</h2>
+  </div>
+  <div id="rework-content"></div>
+</div>
+
+<!-- PUNCH LIST -->
+<div id="view-punch" class="view">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn btn-gray btn-sm" onclick="showView('list')">← Back</button>
+    <h2 style="font-size:18px;color:var(--navy)">📋 Punch List</h2>
+  </div>
+  <div class="punch-filters" id="punch-filters">
+    <button class="btn btn-sm active" onclick="setPunchFilter('open')">Open</button>
+    <button class="btn btn-sm" onclick="setPunchFilter('resolved')">Resolved</button>
+    <button class="btn btn-sm" onclick="setPunchFilter('all')">All</button>
+  </div>
+  <div id="punch-content"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="mo"><div class="modal" id="mc"></div></div>
+
+<script>
+// ═════════════════════════════════════════════════════════════════════════════
+// GATE DATA
+// ═════════════════════════════════════════════════════════════════════════════
+const G={
+"prep": {"name": "PREP", "items": [{"grp": "1", "section": "Walls", "num": "P.1", "desc": "Check stability, even alignment, and smooth surface. Check plastic trims."}, {"grp": "2", "section": "OH-Cabinet Subassemblies", "num": "P.2", "desc": "Verify no splinters, secure joints, smooth finish. No cutting damages, no split blocks. Squared"}, {"grp": "3", "section": "Kitchen Subassemblies", "num": "P.3", "desc": "Verify no splinters, secure joints, smooth finish. No cutting damages, no split blocks."}, {"grp": "4", "section": "Bed & Bench Subassemblies", "num": "P.4", "desc": "Verify no splinters, secure joints, smooth finish. No cutting damages, no split blocks. Check buildsheet for option door"}, {"grp": "5", "section": "Counter", "num": "P.5", "desc": "Check choice. Ensure surfaces are smooth, aligned, and free of damage. Square cut corners"}, {"grp": "6", "section": "Table", "num": "P.6", "desc": "Check choice. Ensure surfaces are smooth, aligned, and free of damage. Check mount for selection"}, {"grp": "7", "section": "Cabinets Doors", "num": "P.7", "desc": "Verify smooth finish, alignment, secure hardware. No splitting at joints"}, {"grp": "8", "section": "Drawer Faces", "num": "P.8", "desc": "Verify smooth finish, alignment, secure hardware.  No splitting at joints"}, {"grp": "9", "section": "Roof subassemblies", "num": "P.9", "desc": "Verify no splinters, secure joints, smooth finish. No cutting damages, no split blocks."}, {"grp": "10", "section": "Wood frames for windows/hatches", "num": "P.10", "desc": "Verify no splinters, secure joints, smooth finish. No cutting damages, no split blocks."}, {"grp": "11", "section": "Bathroom Door", "num": "P.11", "desc": "Check for damages (on plastic, panels). Squareness"}, {"grp": "12", "section": "Plumbing Subassemblies", "num": "P.12", "desc": "Hand test for tightness and no damages. Check for squareness."}, {"grp": "13", "section": "Waterlines", "num": "P.13", "desc": "Test for tightness and no damages."}, {"grp": "14", "section": "Water Pump", "num": "P.14", "desc": "Check alignment, secured subassembly."}, {"grp": "15", "section": "Gas Regulator & Propane Kit", "num": "P.15", "desc": "Check for secure mounting, no damage, tightness."}, {"grp": "16", "section": "Hot Water Tank", "num": "P.16", "desc": "Check waterlines, valves, secured connections, no damage on styrofoam. No cracks on filter"}, {"grp": "17", "section": "Furnace covers", "num": "P.17", "desc": "Check alignment, secured subassembly."}, {"grp": "18", "section": "Converter", "num": "P.18", "desc": "Check for damages, wire connections, fuse holder."}, {"grp": "19", "section": "MPPT Controller Subassembly", "num": "P.19", "desc": "Check wood assembly, screws, alignment. No stripped wires"}, {"grp": "20", "section": "DC to DC Charger", "num": "P.20", "desc": "Check wood assembly, screws, alignment.No stripped wires"}, {"grp": "21", "section": "7 Pin Junction Box", "num": "P.21", "desc": "Check cable color, connection, no damages."}, {"grp": "22", "section": "Shore power outlet", "num": "P.22", "desc": "Check for damages, wire connections, strip wires"}, {"grp": "23", "section": "Storage Boxes", "num": "P.23", "desc": "Verify all boxes are securely assembled, smooth edges, no defects. Drain holes opened."}, {"grp": "24", "section": "Metal Door Frames", "num": "P.24", "desc": "Check alignment, smooth finish, and secure joints."}, {"grp": "25", "section": "Tanks", "num": "P.25", "desc": "Check for secure mounting, no damage, wires installed and taped."}, {"grp": "26", "section": "Sinks", "num": "P.26", "desc": "Check for damages"}]},
+"bld-c": {"name": "Bld C", "items": [{"grp": "1", "section": "Blocks Installation", "num": "1.1", "desc": "Verify blocks are level, securely positioned, and correctly placed according to model specifications with a 3/16\" allowance for windows."}, {"grp": "2", "section": "Belly Band Installation", "num": "2.1", "desc": "Ensure alignment and secure attachment. Check for rivets, no gaps on corners or edges, and ensure no gaps on the top."}, {"grp": "3", "section": "Window-Hatch frames", "num": "3.1", "desc": "Verify window frames are level, securely positioned, and correctly placed according to model specifications"}, {"grp": "3", "section": "Window-Hatch frames", "num": "3.2", "desc": "Verify hatch frames are level, securely positioned, and correctly placed according to model specifications including additional block"}, {"grp": "4", "section": "Fiberglass Installation-Tabbing", "num": "4.1", "desc": "Ensure fiberglass is properly aligned, secured, and check for bubbles or anomalies in internal fiberglass covering blocks."}, {"grp": "4", "section": "Fiberglass Installation-Tabbing", "num": "4.2", "desc": "Resin tags on inner shell that inhibit headliner install"}, {"grp": "5", "section": "Cut-outs and Installation", "num": "5.1", "desc": "Ensure window cut-outs are precise, clean, and aligned with respective components."}, {"grp": "5", "section": "Cut-outs and Installation", "num": "5.2", "desc": "Ensure hatch cut-outs are precise, clean, and aligned with respective components."}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.1", "desc": "Ensure solar panels are securely installed"}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.2", "desc": "Sealed with Proflex where necessary to prevent leaks"}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.3", "desc": "Verify lights are straight, securely mounted, aligned, and lens color matches build sheet."}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.4", "desc": "Confirm all brake lights are aligned."}, {"grp": "7", "section": "Headliner", "num": "7.1", "desc": "Confirm headliner is free from damage, wrinkles and securely installed. Cut straight"}, {"grp": "7", "section": "Headliner", "num": "7.2", "desc": "Check for 2\" Flaps either side of top of Door headliner"}, {"grp": "7", "section": "Headliner", "num": "7.3", "desc": "Check short cut sections and joints"}, {"grp": "7", "section": "Headliner", "num": "7.4", "desc": "Check headliner glue leftovers"}, {"grp": "8", "section": "Cement/Mud at Entrance", "num": "8.1", "desc": "Verify cement/mud application is even and smooth at the entrance area and the whole aisle"}, {"grp": "9", "section": "Floor Control & Leveling", "num": "9.1", "desc": "Use a level to ensure floors are even with no dips. Flatness: \u2264 1/8\u201d variation over 6 ft"}, {"grp": "9", "section": "Floor Control & Leveling", "num": "9.2", "desc": "Check pin locations, layout based on trailer type"}, {"grp": "10", "section": "Wireless Camera Installation", "num": "10.1", "desc": "Confirm camera installation is secure"}, {"grp": "11", "section": "Speaker Wiring, Required Drops", "num": "11.1", "desc": "Confirm speaker wiring (if needed), wire drops"}, {"grp": "12", "section": "Flooring", "num": "12.1", "desc": "Ensure vinyl flooring is installed flat, secure, durable, and visually clean, with no defects"}, {"grp": "12", "section": "Flooring", "num": "12.2", "desc": "No gaps, overlaps, or lifting edges. No soft or spongy feel"}, {"grp": "12", "section": "Flooring", "num": "12.3", "desc": "Check pin locations, screws placed before viynl layout based on trailer type."}, {"grp": "13", "section": "Awning", "num": "13.1", "desc": "Brackets and put on straight and level?"}]},
+"pod1": {"name": "POD1", "items": [{"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.1", "desc": "Overhead cabinets installed level, square, and fully seated in correct position."}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.2", "desc": "Gap between cabinet and wall is \u2264 1/2\". No shim required if gap is \u2264 1/4\". Shims must be used if gap is > 1/4\" and \u2264 1/2\". No gap > 1/2\" acceptable without QC approval."}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.3", "desc": "Cabinets sit flush with wall with no twisting or leaning.No movement when pushed."}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.4", "desc": "No headliner wrinkles, creases during installation"}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.5", "desc": "Cabinet surfaces clean and free from damage."}, {"grp": "2", "section": "Installing Walls", "num": "2.1", "desc": "Walls installed, leveled, square, and fully seated."}, {"grp": "2", "section": "Installing Walls", "num": "2.2", "desc": "Gap between cabinet and wall is \u2264 1/2\". No shim required if gap is \u2264 1/4\". Shims must be used if gap is > 1/4\" and \u2264 1/2\". No gap > 1/2\" acceptable without QC approval."}, {"grp": "2", "section": "Installing Walls", "num": "2.3", "desc": "Wall surfaces clean and free from damage. No voids or soft spots detected."}, {"grp": "2", "section": "Installing Walls", "num": "2.4", "desc": "No headliner wrinkles, creases during installation"}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.1", "desc": "Benches installed, leveled, square, fully seated."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.2", "desc": "No rocking or movement when pressure applied."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.3", "desc": "Bench fully supported at mounting points."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.4", "desc": "No excessive gaps(>1/16\") between bench and structures."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.5", "desc": "Supports load with no flexing or instability.(~200 lbs)"}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.6", "desc": "Surfaces clean and free from damage."}, {"grp": "4", "section": "Plumbing", "num": "4.1", "desc": "Plumbing lines routed with no kinks or pinches."}, {"grp": "4", "section": "Plumbing", "num": "4.2", "desc": "Visible fittings properly connected."}, {"grp": "4", "section": "Plumbing", "num": "4.3", "desc": "Hot/cold lines positioned per layout."}, {"grp": "4", "section": "Plumbing", "num": "4.4", "desc": "Drain lines aligned and supported."}, {"grp": "4", "section": "Plumbing", "num": "4.5", "desc": "No stress or sharp bends on lines."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.1", "desc": "Wiring routed with no kinks or pinches."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.2", "desc": "Wires supported using designated paths."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.3", "desc": "No exposed copper or damaged insulation."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.4", "desc": "Harnesses positioned per model layout."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.5", "desc": "No tension or overstretching on wiring."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.6", "desc": "No loose or unsupported wiring."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.7", "desc": "Surge protector installed correctly."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.8", "desc": "DC-to-DC controller installed correctly."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.9", "desc": "Plugs/outlets positioned correctly. Check for optional outlets (120V/12V/USB)"}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.10", "desc": "Interior lights positioned correctly without visible gap."}, {"grp": "6", "section": "Shower Installation", "num": "6.1", "desc": "Shower pan stable with no flexing."}, {"grp": "6", "section": "Shower Installation", "num": "6.2", "desc": "Shower shells positioned with no overlapping"}, {"grp": "6", "section": "Shower Installation", "num": "6.3", "desc": "Plumbing visually aligned."}, {"grp": "6", "section": "Shower Installation", "num": "6.4", "desc": "No cracks or stress marks."}, {"grp": "6", "section": "Shower Installation", "num": "6.5", "desc": "Components fit flush with no gaps."}, {"grp": "6", "section": "Shower Installation", "num": "6.6", "desc": "Surfaces clean and free from damage."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.1", "desc": "Trim installed with consistent placement."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.2", "desc": "Trim sits flush against structures."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.3", "desc": "No gaps or loose sections."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.4", "desc": "Edges and seams uniform."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.5", "desc": "Surfaces free from damage."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "8.1", "desc": "Components solid with no movement."}, {"grp": "8", "section": "Shower Installation", "num": "8.2", "desc": "No twisting or instability."}, {"grp": "8", "section": "Shower Installation", "num": "8.3", "desc": "Joints and seams seated properly."}, {"grp": "8", "section": "Shower Installation", "num": "8.4", "desc": "No cracks or material defects."}, {"grp": "8", "section": "Shower Installation", "num": "8.5", "desc": "Overall installation clean and aligned."}, {"grp": "8", "section": "Shower Installation", "num": "8.5", "desc": "Components fit flush with no gaps."}, {"grp": "8", "section": "Shower Installation", "num": "8.6", "desc": "Surfaces clean and free from damage."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.1", "desc": "Fresh water lines routed with no kinks."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.2", "desc": "Lines supported and guided properly."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.3", "desc": "No rubbing or sharp-edge contact."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.4", "desc": "Drain lines aligned and supported."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.5", "desc": "All lines positioned per layout."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.1", "desc": "Trim installed with consistent placement."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.2", "desc": "Trim sits flush against structures."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.3", "desc": "No gaps or loose sections."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.4", "desc": "Edges and seams uniform."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.5", "desc": "Surfaces free from damage."}, {"grp": "11", "section": "Structural Checks", "num": "11.1", "desc": "Components solid with no movement."}, {"grp": "11", "section": "Structural Checks", "num": "11.2", "desc": "No twisting or instability."}, {"grp": "11", "section": "Structural Checks", "num": "11.3", "desc": "Joints and seams seated properly."}, {"grp": "11", "section": "Structural Checks", "num": "11.4", "desc": "No cracks or material defects."}, {"grp": "11", "section": "Structural Checks", "num": "11.5", "desc": "Overall installation clean and aligned."}]},
+"pod2": {"name": "POD2", "items": [{"grp": "1", "section": "Kitchen Cabinets", "num": "1.1", "desc": "Cabinets installed level, square, seated."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.2", "desc": "Cabinets sit flush with no excessive gaps."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.3", "desc": "Alignment consistent across kitchen."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.4", "desc": "No twisting or movement when pressed."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.5", "desc": "Surfaces clean and free from damage."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.6", "desc": "Seams and edges uniform."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.1", "desc": "Face frames installed level, square, fully seated."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.2", "desc": "Frames sit flush with no excessive gaps(>1/16\")."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.3", "desc": "Dovetail Joint Quality Check: Fit & Tightness, Flush Surfaces, No Splitting or Cracks"}, {"grp": "2", "section": "Kitchen Faces", "num": "2.4", "desc": "No twisting or bowing under pressure."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.5", "desc": "Alignment consistent between faces. Edges and seams uniform and clean."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.6", "desc": "Surfaces clean and free from damage."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.1", "desc": "Countertops installed in correct location, sit flat with no rocking or flexing and fully supported."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.2", "desc": "Countertop edges aligned with cabinets and adjoining surfaces."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.3", "desc": "Plastic trims installed, seated properly, and consistent along all edges."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.4", "desc": "Cabinets installed square and level (no twist, tilt, or step)."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.5", "desc": "Bottom of cubbies installed flat and fully supported."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.6", "desc": "No internal gaps greater than 1/4\" inside cubbies or cabinet interiors."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.7", "desc": "No visible gaps greater than 1/16\" in finished areas without trim."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.8", "desc": "Cabinet and countertop surfaces clean and free from scratches, chips, dents, or glue residue."}, {"grp": "4", "section": "Windows", "num": "4.1", "desc": "Windows installed in correct openings according to model layout."}, {"grp": "4", "section": "Windows", "num": "4.2", "desc": "Window frames seated evenly and square in the opening."}, {"grp": "4", "section": "Windows", "num": "4.3", "desc": "Sealant (butyl) applied continuously around full perimeter."}, {"grp": "4", "section": "Windows", "num": "4.4", "desc": "All window mounting screws tightened and seated properly."}, {"grp": "4", "section": "Windows", "num": "4.5", "desc": "No visible gaps between window frame and fiberglass body."}, {"grp": "4", "section": "Windows", "num": "4.6", "desc": "Window opens and closes smoothly (if operable)."}, {"grp": "4", "section": "Windows", "num": "4.7", "desc": "Screens installed correctly (if applicable)."}, {"grp": "4", "section": "Windows", "num": "4.8", "desc": "Glass and frames clean and free from cracks, chips, or major scratches."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.1", "desc": "Hatches installed in correct locations according to model layout."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.2", "desc": "Hatch frames sit flush and fully seated against surface."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.3", "desc": "Sealant applied evenly around full perimeter."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.4", "desc": "All hatch mounting screws tightened and seated properly."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.5", "desc": "Hatch opens and closes smoothly without binding."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.6", "desc": "Latches or locks engage properly and hold hatch closed."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.7", "desc": "No warping, cracking, or damage to hatch or frame."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.8", "desc": "Surrounding surface clean and free from tool marks or excess sealant."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.1", "desc": "120V outlets installed in correct locations, seated flush and loomed"}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.2", "desc": "USB outlets installed correctly and aligned."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.3", "desc": "Surge protector installed in correct location per model layout."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.4", "desc": "Controllers (solar / charging / system) mounted securely and oriented correctly."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.5", "desc": "Converter box installed and seated properly."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.6", "desc": "Monitor panels installed, aligned, and readable."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.7", "desc": "Wiring to components not exposed, pinched, or under tension."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.8", "desc": "No visible damage, cracks, or broken covers on electrical components."}, {"grp": "7", "section": "Interior Lights", "num": "7.1", "desc": "Interior lights installed in correct locations according to model layout."}, {"grp": "7", "section": "Interior Lights", "num": "7.2", "desc": "Light fixtures sit flush with ceiling or wall surfaces."}, {"grp": "7", "section": "Interior Lights", "num": "7.3", "desc": "No visible gaps, tilting, or loose fixtures."}, {"grp": "7", "section": "Interior Lights", "num": "7.4", "desc": "Wiring not exposed, pinched, or visible at fixtures."}, {"grp": "7", "section": "Interior Lights", "num": "7.5", "desc": "Light lenses and covers installed correctly and clean."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.1", "desc": "Fresh water lines routed with no kinks."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.2", "desc": "Lines supported and guided properly."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.3", "desc": "No rubbing or sharp-edge contact."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.4", "desc": "Drain lines aligned and supported."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.5", "desc": "All lines positioned per layout."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.1", "desc": "Hot water tank installed in correct location and orientation."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.2", "desc": "Tank seated securely with no rocking or movement."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.3", "desc": "Hot, cold, and relief lines connected and routed correctly."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.4", "desc": "No visible pinching, sharp bends, or stress on lines."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.5", "desc": "Vent or exhaust aligned correctly (if applicable)."}, {"grp": "10", "section": "Furnace", "num": "10.1", "desc": "Furnace installed in correct location and orientation."}, {"grp": "10", "section": "Furnace", "num": "10.2", "desc": "Unit seated fully and supported correctly."}, {"grp": "10", "section": "Furnace", "num": "10.3", "desc": "Ducting connected and routed according to standard work."}, {"grp": "10", "section": "Furnace", "num": "10.4", "desc": "No visible pinched, crushed, or disconnected ducts."}, {"grp": "10", "section": "Furnace", "num": "10.5", "desc": "Wiring and gas line routed cleanly with no stress or tension."}, {"grp": "10", "section": "Furnace", "num": "10.6", "desc": "Required clearances maintained."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.1", "desc": "Roof components installed in correct locations per model layout."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.2", "desc": "Components sit flat and fully seated on roof surface."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.3", "desc": "Sealant applied with full coverage and no visible gaps."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.4", "desc": "No lifting, shifting, or distortion visible."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.5", "desc": "Roof surface around components clean and undamaged."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.6", "desc": "City water inlet installed flush and aligned."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.7", "desc": "No visible gaps around inlet opening."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.8", "desc": "Sealant clean and properly seated."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.1", "desc": "Jack antenna installed in correct location and orientation."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.2", "desc": "Base seated flush with exterior surface."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.3", "desc": "Sealant applied evenly around base."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.4", "desc": "No gaps or loose movement."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.5", "desc": "Exterior shower box installed square and flush to body."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.6", "desc": "Door opens and closes smoothly."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.7", "desc": "No visible gaps around box perimeter."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.8", "desc": "Hoses and fittings positioned neatly inside cavity."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.9", "desc": "Sealant clean, continuous, and complete."}]},
+"pod3": {"name": "POD3", "items": [{"grp": "1", "section": "Cabinet Door Installation", "num": "1.1", "desc": "Cabinet doors installed in correct locations according to model layout."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.2", "desc": "Doors aligned square and level with consistent reveal on all sides."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.3", "desc": "No rubbing, binding, or interference when opening or closing."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.4", "desc": "Door gaps even left-to-right and top-to-bottom."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.5", "desc": "Hinges seated properly with no visible misalignment."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.6", "desc": "Doors stay in position and do not swing open or closed by themselves."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.7", "desc": "No visible gaps greater than 1/16\" in finished areas.(not more than bumpers)"}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.8", "desc": "Door surfaces clean and free from scratches, dents, chips, or glue marks."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.1", "desc": "Cubbies installed square and level in correct locations."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.2", "desc": "Bottom and sides fully supported with no soft spots or flexing."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.3", "desc": "No internal gaps greater than 1/4\u2033 inside cubby space."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.4", "desc": "No visible gaps greater than 1/16\u2033 on exposed edges without trim."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.5", "desc": "Surfaces clean and free from scratches, chips, or glue marks."}, {"grp": "3", "section": "Final Trim", "num": "3.1", "desc": "All remaining interior trim pieces installed according to standard work."}, {"grp": "3", "section": "Final Trim", "num": "3.2", "desc": "Trim sits flush against walls, ceilings, and cabinets."}, {"grp": "3", "section": "Final Trim", "num": "3.3", "desc": "No gaps, lifting, or loose trim visible."}, {"grp": "3", "section": "Final Trim", "num": "3.4", "desc": "Joints and corners aligned and uniform."}, {"grp": "3", "section": "Final Trim", "num": "3.5", "desc": "Surfaces clean and free from dents, scratches, chips, or excess sealant."}, {"grp": "4", "section": "Shelves", "num": "4.1", "desc": "Shelves installed in correct locations according to model layout."}, {"grp": "4", "section": "Shelves", "num": "4.2", "desc": "Shelves sit flat and fully supported along brackets or supports."}, {"grp": "4", "section": "Shelves", "num": "4.3", "desc": "No rocking, sagging, or movement when light pressure is applied."}, {"grp": "4", "section": "Shelves", "num": "4.4", "desc": "Shelf edges aligned with cabinet/cubby faces where applicable."}, {"grp": "4", "section": "Shelves", "num": "4.5", "desc": "Surfaces clean and free from scratches, chips, or tool marks."}, {"grp": "5", "section": "Drawers", "num": "5.1", "desc": "Drawers installed in correct locations according to model layout."}, {"grp": "5", "section": "Drawers", "num": "5.2", "desc": "Drawers slide open and closed smoothly without binding."}, {"grp": "5", "section": "Drawers", "num": "5.3", "desc": "Drawer fronts aligned and even with surrounding cabinet faces."}, {"grp": "5", "section": "Drawers", "num": "5.4", "desc": "No excessive side-to-side or vertical movement."}, {"grp": "5", "section": "Drawers", "num": "5.5", "desc": "Drawer stops and slides seated fully and function correctly."}, {"grp": "5", "section": "Drawers", "num": "5.6", "desc": "Surfaces clean and free from scratches, dents, or chips."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.1", "desc": "Bathroom door installed square and level in the opening."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.2", "desc": "Door opens and closes smoothly with no rubbing or binding."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.3", "desc": "Latch engages correctly and holds door in closed position."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.4", "desc": "Trim installed around door frame and seated flush."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.5", "desc": "No visible gaps greater than 1/16\" in finished trim areas."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.6", "desc": "No visible damage, scratches, dents, or chips on door or trim."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.1", "desc": "Bed lids installed in correct locations and orientation."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.2", "desc": "Bench lids installed in correct locations and orientation."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.3", "desc": "Hinges seated properly with smooth opening and closing motion."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.4", "desc": "Lids sit flush when closed with no rocking or misalignment."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.5", "desc": "No visible gaps greater than 1/16\" in visible finished areas."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.6", "desc": "Surfaces clean and free from scratches, dents, or damage."}, {"grp": "8", "section": "Bathroom Components", "num": "8.1", "desc": "Medicine cabinet installed in correct location, seated square and level."}, {"grp": "8", "section": "Bathroom Components", "num": "8.2", "desc": "Cabinet door opens and closes smoothly with no rubbing or interference."}, {"grp": "8", "section": "Bathroom Components", "num": "8.3", "desc": "No visible gaps greater than 1/16\" around cabinet edges in finished areas."}, {"grp": "8", "section": "Bathroom Components", "num": "8.4", "desc": "Shower curtain rail installed securely and level."}, {"grp": "8", "section": "Bathroom Components", "num": "8.5", "desc": "Curtain rings/clips mounted correctly and move smoothly along the rail."}, {"grp": "8", "section": "Bathroom Components", "num": "8.6", "desc": "Toilet paper holder installed in correct position and seated firmly."}, {"grp": "8", "section": "Bathroom Components", "num": "8.7", "desc": "No wobble, looseness, or misalignment at mounting point."}, {"grp": "8", "section": "Bathroom Components", "num": "8.8", "desc": "Shower wand installed in correct position and seated in holder properly."}, {"grp": "8", "section": "Bathroom Components", "num": "8.9", "desc": "Hose routed neatly with no kinks, twisting, or pinching."}, {"grp": "8", "section": "Bathroom Components", "num": "8.1", "desc": "Bellyband Proflex applied evenly along the required seam/edge."}, {"grp": "8", "section": "Bathroom Components", "num": "8.11", "desc": "No visible gaps, lifting, or breaks in proflex line."}, {"grp": "8", "section": "Bathroom Components", "num": "8.12", "desc": "Proflex line appears clean, continuous, and professionally finished."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.1", "desc": "Support pole installed in correct location and orientation."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.2", "desc": "Pole seated firmly at both top and bottom contact points."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.3", "desc": "No wobble, movement, or play when light pressure is applied."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.4", "desc": "Contact surfaces show no damage or distortion."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.5", "desc": "Pole finish clean, straight, and undamaged."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.1", "desc": "Blinds and valances installed in correct locations and orientation."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.2", "desc": "Valances sit level and tight to the mounting surface with no visible gaps."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.3", "desc": "Blinds move up/down smoothly without rubbing or interference."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.4", "desc": "Rangehood installed level in correct location according to layout."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.5", "desc": "Rangehood vent and cover aligned and seated properly (visual check)."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.6", "desc": "All visible surfaces clean and free from dents, scratches, or damage."}, {"grp": "11", "section": "Awning", "num": "11.1", "desc": "Awning installed in correct position according to model layout. Proflexed"}, {"grp": "11", "section": "Awning", "num": "11.2", "desc": "Awning rail and brackets seated tight against body with no gaps."}, {"grp": "11", "section": "Awning", "num": "11.3", "desc": "All visible fasteners installed and seated properly (no missing screws)."}, {"grp": "11", "section": "Awning", "num": "11.4", "desc": "Awning housing appears straight with no visible twist or bow."}, {"grp": "11", "section": "Awning", "num": "11.5", "desc": "Fabric (if visible) free from tears, major wrinkles, or damage."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.1", "desc": "Battery compartment or battery box installed in correct location."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.2", "desc": "Battery secured to prevent movement during travel (straps/clamps as per standard)."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.3", "desc": "Cables routed according to standard work with no pinching, rubbing, or sharp bends."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.4", "desc": "Inverter mounted in correct location with proper clearance around unit."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.5", "desc": "Visible wiring to inverter supported and not under tension."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.6", "desc": "Battery and inverter area clean, organized, and free from loose items. Wires through floor proflexed"}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.1", "desc": "Main door installed square and level in the opening."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.2", "desc": "Door closes fully without rubbing on frame or threshold."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.3", "desc": "Door latch engages and holds securely in closed position."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.4", "desc": "Gasket/ seal around door seated properly and continuous."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.5", "desc": "No visible gaps between door and frame beyond standard allowance."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.6", "desc": "Door surface and frame free from dents, scratches, or damage."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.1", "desc": "Corner pads installed in all designated locations according to model layout."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.2", "desc": "Pads seated flat and fully supported with no lifting or curling."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.3", "desc": "No visible gaps between pad and wall/floor surface."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.4", "desc": "Adhesion appears consistent with no loose edges."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.5", "desc": "Surfaces clean with no excess glue, sealant, or smearing visible."}, {"grp": "15", "section": "Table Installation", "num": "15.1", "desc": "Table installed in correct location and orientation according to model layout."}, {"grp": "15", "section": "Table Installation", "num": "15.2", "desc": "Table top sits level with no rocking or instability."}, {"grp": "15", "section": "Table Installation", "num": "15.3", "desc": "Support base / leg secured and seated properly."}, {"grp": "15", "section": "Table Installation", "num": "15.4", "desc": "No visible gaps between table base and floor/wall mounting points."}, {"grp": "15", "section": "Table Installation", "num": "15.5", "desc": "Table surface clean and free from scratches, dents, or chips."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.1", "desc": "Proflex applied to all required interior and exterior joints and seams."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.2", "desc": "All critical areas (windows, doors, hatches, roof components, trims, belly band) are sealed."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.3", "desc": "Bead is continuous, consistent, and properly tooled."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.4", "desc": "No visible gaps, air pockets, skips, or broken seal lines."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.5", "desc": "No excessive smearing on surrounding surfaces."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.6", "desc": "All sealing appears watertight and professionally finished."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.1", "desc": "All visible staple holes filled completely."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.2", "desc": "Filler sits flush with surrounding surface (no sink, bump, or ridge)."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.3", "desc": "No visible unfilled holes in finished areas."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.4", "desc": "Finished surface smooth and ready for final inspection."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.1", "desc": "All dust, debris, and loose material removed from floor and surfaces."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.2", "desc": "Cabinets, shelves, cubbies, and bathroom wiped clean."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.3", "desc": "No sawdust, fasteners, or scrap material left inside unit."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.4", "desc": "Windows, counters, and mirrors wiped and clean."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.5", "desc": "Overall interior presents as finished and ready for next stage / PDI."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.1", "desc": "Step installed in correct position and seated securely against the body."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.2", "desc": "No visible movement, wobble, or misalignment at step mounting points."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.3", "desc": "Tire brackets installed in correct locations and aligned properly."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.4", "desc": "Brackets are seated flush and secured firmly."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.5", "desc": "Tires mounted correctly on brackets and secured for transport."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.6", "desc": "Fire extinguisher installed in designated location and accessible."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.7", "desc": "Mount is secure with no movement under light pull."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.8", "desc": "Smoke detector installed in correct ceiling location."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.9", "desc": "CO detector installed in correct location according to standard."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.1", "desc": "Detectors mounted flush with no visible gaps, tilt, or loose fit."}]},
+"hoist-frame": {"name": "Hoist-frame", "items": [{"grp": "1", "section": "Frame Welds & Joints (Crossmembers &Support)", "num": "1.1", "desc": "Inspect for cracks, gaps, or poor weld penetration"}, {"grp": "2", "section": "Undercarriage Coating", "num": "2.1", "desc": "Ensure complete rust protection and no exposed metal"}, {"grp": "3", "section": "Axle Mounts and Hardware", "num": "3.1", "desc": "Verify tight torque and correct installation of bolts and fasteners"}, {"grp": "4", "section": "Safety Chains & Hitch Mounting Points", "num": "4.1", "desc": "Confirm correct spacing and alignment"}, {"grp": "5", "section": "Brake Wiring and Connections", "num": "5.1", "desc": "Verify wiring is routed securely and connections are weather-sealed"}, {"grp": "6", "section": "Hub Grease & Bearings", "num": "6.1", "desc": "Confirm proper lubrication and torque specification"}, {"grp": "7", "section": "Underplumbing Check", "num": "7.1", "desc": "Verify all plumbing under the trailer is properly secured, leak-free, and routed away from potential abrasion or heat sources."}, {"grp": "8", "section": "Plumbing Glue Application", "num": "8.1", "desc": "Ensure no visible extra glue and that all plumbing joints are properly glued and sealed."}, {"grp": "9", "section": "Cable Management", "num": "9.1", "desc": "Verify that all cables are protected with loom and secured to prevent movement or wear."}, {"grp": "10", "section": "Termination Valve Function", "num": "10.1", "desc": "Confirm the termination valve operates smoothly, with secure lids and connections."}, {"grp": "11", "section": "Hole Sealing", "num": "11.1", "desc": "All holes through the underbody or frame should be fully sealed with spray foam to prevent intrusion."}]}
+};
+
+const GO=["prep", "bld-c", "pod1", "pod2", "pod3", "hoist-frame"];
+const GN={'prep':'PREP','bld-c':'Bld C','pod1':'POD1','pod2':'POD2','pod3':'POD3','hoist-frame':'Hoist-frame'};
+const GI={'prep':'📦','bld-c':'🏗️','pod1':'🔧','pod2':'⚡','pod3':'🪟','hoist-frame':'🔩'};
+
+const INSPECTORS=['Desiree','Nicolas','Mehran','David','Jeff'];
+const HAKAN_NAME='Hakan Yasar';
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STATE MANAGEMENT
+// ═════════════════════════════════════════════════════════════════════════════
+const STORAGE_KEY='et_qg_v3';
+const INSP_STORAGE_KEY='et_qg_v3_default_insp';
+
+let trailers=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+let currentTrailerId=null;
+let currentGate=GO[0];
+let currentTab='gates';
+let punchFilter='open';
+let expandedSections={};
+let pendingPhoto=null;
+let pendingPhotoDataUrl=null;
+
+// Voice recording globals
+let mediaRecorder=null;
+let audioChunks=[];
+let recordingTimer=null;
+let recordingSeconds=0;
+
+const $=id=>document.getElementById(id);
+const e=s=>(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const now=()=>new Date().toISOString();
+const fmtDate=d=>d?new Date(d).toLocaleDateString():'—';
+const fmtDateTime=d=>d?new Date(d).toLocaleString():'—';
+const fmtShort=d=>d?new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date(d).toLocaleDateString([],{month:'short',day:'numeric'}):'—';
+
+const save=()=>localStorage.setItem(STORAGE_KEY,JSON.stringify(trailers));
+const getTrailer=id=>trailers.find(t=>t.id===id);
+const getDefaultInspector=()=>localStorage.getItem(INSP_STORAGE_KEY)||'';
+const setDefaultInspector=name=>localStorage.setItem(INSP_STORAGE_KEY,name);
+
+// Get inspector for current gate (with fallback to default)
+function getCurrentGateInspector(t){
+  if(!t.gateInspectors)t.gateInspectors={};
+  return t.gateInspectors[currentGate]||getDefaultInspector();
+}
+
+// Set inspector for current gate
+function setGateInspector(t,inspector){
+  if(!t.gateInspectors)t.gateInspectors={};
+  t.gateInspectors[currentGate]=inspector;
+  save();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═════════════════════════════════════════════════════════════════════════════
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  $(`view-${name}`).classList.add('active');
+  if(name==='list')renderList();
+  if(name==='rework')renderReworkDashboard();
+  if(name==='punch')renderPunchList();
+}
+
+$('i-model').onchange=ev=>{$('cg').style.display=ev.target.value==='__c'?'block':'none';};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STATS CALCULATION
+// ═════════════════════════════════════════════════════════════════════════════
+function getItemStatus(trailer,gateId,itemNum){
+  const key=`${gateId}|${itemNum}`;
+  const check=(trailer.checks||{})[key];
+  return check?check.status:null;
+}
+
+function calcStats(trailer,gateId=null){
+  let pass=0,rejected=0,hold=0,letgo=0,pending=0,total=0;
+  const items=gateId?G[gateId].items:GO.flatMap(g=>G[g].items.map(i=>({...i,_g:g})));
+  for(const it of items){
+    total++;
+    const st=getItemStatus(trailer,gateId||it._g,it.num);
+    if(!st){pending++;continue;}
+    if(st==='pass')pass++;
+    else if(st==='rejected')rejected++;
+    else if(st==='hold')hold++;
+    else if(st==='letgo')letgo++;
+  }
+  const done=pass+rejected+hold+letgo;
+  const pct=total?Math.round((done/total)*100):0;
+  return{pass,rejected,hold,letgo,pending,done,total,pct};
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// HOME SCREEN - TRAILER LIST
+// ═════════════════════════════════════════════════════════════════════════════
+function renderList(){
+  const el=$('tlist'),no=$('no-t');
+  if(!trailers.length){el.innerHTML='';no.style.display='block';return;}
+  no.style.display='none';
+  el.innerHTML=trailers.map(t=>{
+    const s=calcStats(t);
+    const pct=s.pct;
+    const clr=pct===100?'var(--green)':pct>50?'var(--blue)':pct>0?'var(--orange)':'#ccc';
+    let cls='in-progress';
+    if(t.approved)cls='approved';
+    else if(s.rejected>0)cls='has-rejections';
+    else if(s.hold>0)cls='has-holds';
+    else if(s.letgo>0)cls='has-letgos';
+    return`<div class="trailer-card ${cls}" onclick="openTrailer('${t.id}')">
+      <div class="info">
+        <h3>${e(t.customer)} — ${e(t.model)}</h3>
+        <p>${e(t.inv)} · ${fmtDate(t.created)}</p>
+        <div class="status-pills">
+          <span class="pill">✅ ${s.pass}</span>
+          <span class="pill">🔴 ${s.rejected}</span>
+          <span class="pill">🟡 ${s.hold}</span>
+          <span class="pill">⏭️ ${s.letgo}</span>
+          <span class="pill">⏳ ${s.pending}</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="pct" style="color:${clr}">${pct}%</div>
+        <div class="progress-bar"><div class="fill" style="width:${pct}%;background:${clr}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function createT(){
+  const cust=$('i-cust').value.trim();
+  const inv=$('i-inv').value.trim();
+  let model=$('i-model').value;
+  if(model==='__c')model=$('i-cmod').value.trim();
+  if(!cust||!inv||!model){alert('Please fill all required fields');return;}
+  const trailer={
+    id:'tr_'+Date.now(),
+    customer:cust,
+    inv:inv,
+    model:model,
+    buildsheet:$('i-bs').value.trim(),
+    created:now(),
+    checks:{},
+    history:[],
+    gateTimes:{},
+    photos:{},
+    videos:{},
+    voiceNotes:{},
+    gateInspectors:{},
+    approved:null,
+    approvedAt:null
+  };
+  trailers.unshift(trailer);
+  save();
+  openTrailer(trailer.id);
+}
+
+function openTrailer(id){
+  currentTrailerId=id;
+  currentGate=GO[0];
+  currentTab='gates';
+  expandedSections={};
+  renderDetail();
+  showView('detail');
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TRAILER DETAIL
+// ═════════════════════════════════════════════════════════════════════════════
+const MAIN_TABS=[
+  {id:'gates',icon:'📋',label:'QualityGates Pro™'},
+  {id:'buildsheet',icon:'📄',label:'Buildsheet'},
+  {id:'features',icon:'✅',label:'Standard Features'},
+  {id:'standards',icon:'📐',label:'Visual Standards'},
+  {id:'photos',icon:'📸',label:'Photos'},
+  {id:'layout',icon:'🗺️',label:'Trailer Layout'}
+];
+
+function renderDetail(){
+  const t=getTrailer(currentTrailerId);if(!t)return;
+  const s=calcStats(t);
+
+  // Header
+  $('d-hdr').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+    <div><h2 style="font-size:17px;color:var(--navy)">${e(t.customer)} — ${e(t.model)}</h2>
+    <p style="font-size:12px;color:#888">${e(t.inv)} · Created ${fmtDate(t.created)}</p></div>
+    <div style="display:flex;gap:5px">
+      <button class="btn btn-sm btn-gray" onclick="showHistory()">📋 Log</button>
+      <button class="btn btn-sm btn-gray" onclick="showView('list')">← Back</button>
+    </div></div>`;
+
+  // Summary tiles
+  $('d-sum').innerHTML=`
+    <div class="sum-tile pass"><div class="num">${s.pass}</div><div class="lbl">✅ Pass</div></div>
+    <div class="sum-tile rejected"><div class="num">${s.rejected}</div><div class="lbl">🔴 Rejected</div></div>
+    <div class="sum-tile hold"><div class="num">${s.hold}</div><div class="lbl">🟡 Hold</div></div>
+    <div class="sum-tile letgo"><div class="num">${s.letgo}</div><div class="lbl">⏭️ Let Go</div></div>
+    <div class="sum-tile pending"><div class="num">${s.pending}</div><div class="lbl">⏳ Pending</div></div>
+    <div class="sum-tile" style="${s.pct===100?'background:var(--green);color:#fff':''}"><div class="num">${s.pct}%</div><div class="lbl">Done</div></div>`;
+
+  // Banners
+  let banners='';
+  if(s.rejected>0)banners+=`<div class="banner banner-rejections" onclick="showFilteredItems('rejected')"><div class="count">${s.rejected}</div><span>🔴 Rejections need attention</span></div>`;
+  if(s.hold>0)banners+=`<div class="banner banner-holds" onclick="showFilteredItems('hold')"><div class="count">${s.hold}</div><span>🟡 Holds awaiting decision</span></div>`;
+  if(s.letgo>0)banners+=`<div class="banner banner-letgos" onclick="showFilteredItems('letgo')"><div class="count">${s.letgo}</div><span>⏭️ Let Go items in Punch List</span></div>`;
+  $('d-banners').innerHTML=banners;
+
+  // Approval
+  let ap='';
+  if(t.approved){
+    ap=`<div class="approval-bar"><div style="font-size:28px;margin-bottom:8px">✅</div><h3>APPROVED — ${e(t.approved)}</h3><div class="timestamp">${fmtDateTime(t.approvedAt)}</div>
+    <button class="btn btn-sm btn-gray" style="margin-top:12px" onclick="revokeApproval()">Revoke Approval</button></div>`;
+  }else if(s.pending===0&&s.rejected===0&&s.hold===0&&s.total>0){
+    ap=`<div class="approval-bar"><h3>🎉 All Items Complete</h3><div class="sub">Ready for final approval</div>
+    <button class="btn btn-green" onclick="approveTrailer()">✅ Approve — ${HAKAN_NAME}</button></div>`;
+  }
+  $('d-approval').innerHTML=ap;
+
+  // Main tabs
+  $('main-tabs').innerHTML=MAIN_TABS.map(mt=>`<div class="main-tab ${mt.id===currentTab?'active':''}" onclick="switchTab('${mt.id}')">${mt.icon} ${mt.label}</div>`).join('');
+
+  renderMainContent(t);
+}
+
+function switchTab(tab){currentTab=tab;renderDetail();}
+
+function renderMainContent(t){
+  const mc=$('main-content');
+  switch(currentTab){
+    case 'gates':renderGatesTab(t,mc);break;
+    case 'buildsheet':renderBuildsheetTab(t,mc);break;
+    case 'features':renderFeaturesTab(t,mc);break;
+    case 'standards':renderStandardsTab(t,mc);break;
+    case 'photos':renderPhotosTab(t,mc);break;
+    case 'layout':renderLayoutTab(t,mc);break;
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// QUALITY GATES TAB
+// ═════════════════════════════════════════════════════════════════════════════
+function renderGatesTab(t,mc){
+  // Gate tabs with badges
+  let html=`<div class="gate-tabs">${GO.map(gid=>{
+    const gs=calcStats(t,gid);
+    const act=gid===currentGate?'active':'';
+    let badge='';
+    if(gs.rejected>0)badge=`<span class="badge" style="background:var(--red)">${gs.rejected}</span>`;
+    else if(gs.hold>0)badge=`<span class="badge" style="background:var(--yellow);color:#333">${gs.hold}</span>`;
+    else if(gs.pending===0&&gs.total>0)badge=`<span class="badge" style="background:var(--green)">✓</span>`;
+    return`<div class="gate-tab ${act}" onclick="switchGate('${gid}')">${GI[gid]} ${GN[gid]}${badge}</div>`;
+  }).join('')}</div>`;
+
+  // Inspector bar (per-gate)
+  const gateInspector=getCurrentGateInspector(t);
+  const defaultInsp=getDefaultInspector();
+  html+=`<div class="insp-bar">
+    <label>👤 Inspector for ${GN[currentGate]}:</label>
+    <select id="gate-insp" onchange="onGateInspChange(this.value)">
+      <option value="">Select inspector...</option>
+      ${INSPECTORS.map(i=>`<option value="${e(i)}" ${i===gateInspector?'selected':''}>${e(i)}${i===defaultInsp?' (default)':''}</option>`).join('')}
+    </select>
+  </div>`;
+
+  // Timer bar
+  const gt=(t.gateTimes||{})[currentGate]||{};
+  html+=`<div class="timer-bar">
+    <span style="font-weight:600">⏱️ ${GN[currentGate]} Timer</span>
+    ${!gt.start?`<button class="btn btn-sm btn-primary" onclick="startGateTimer()">▶ Start</button>`:
+      gt.end?`<span class="time">${formatDuration(gt.start,gt.end)}</span><span>${fmtShort(gt.start)} → ${fmtShort(gt.end)}</span>`:
+      `<span class="time" id="live-timer">${formatDuration(gt.start,now())}</span><button class="btn btn-sm btn-orange" onclick="endGateTimer()">⏹ Stop</button>`}
+  </div>`;
+
+  // Section controls
+  html+=`<div class="section-controls">
+    <button class="jump-btn" onclick="expandAll()">Expand All</button>
+    <button class="jump-btn" onclick="collapseAll()">Collapse All</button>
+    <button class="jump-btn" onclick="jumpToFirstIncomplete()">Jump to First Incomplete</button>
+  </div>`;
+
+  // Build sections
+  const gate=G[currentGate];
+  const sections=buildSections(gate.items);
+
+  html+=sections.map(sec=>{
+    const secKey=`${currentGate}_${sec.grp}`;
+    const isExpanded=expandedSections[secKey];
+    const done=sec.items.filter(it=>{
+      const st=getItemStatus(t,currentGate,it.num);
+      return st&&st!=='pending';
+    }).length;
+    const hasRejected=sec.items.some(it=>getItemStatus(t,currentGate,it.num)==='rejected');
+    const hasHold=sec.items.some(it=>getItemStatus(t,currentGate,it.num)==='hold');
+    const hasLetGo=sec.items.some(it=>getItemStatus(t,currentGate,it.num)==='letgo');
+    const icons=[];
+    if(hasRejected)icons.push('🔴');
+    if(hasHold)icons.push('🟡');
+    if(hasLetGo)icons.push('⏭️');
+    return`<div class="section-card ${isExpanded?'expanded':''}" id="sec-${sec.grp}">
+      <div class="section-header" onclick="toggleSection('${sec.grp}')">
+        <h4>${sec.grp}. ${e(sec.name)}</h4>
+        <div class="section-icons">${icons.join('')}</div>
+        <span class="section-progress">${done}/${sec.items.length}</span>
+      </div>
+      <div class="section-content ${isExpanded?'expanded':''}">
+        ${sec.items.map(it=>renderCheckItem(t,it)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  mc.innerHTML=html;
+
+  // Start live timer if running
+  if(gt.start&&!gt.end){
+    setInterval(()=>{
+      const el=$('live-timer');
+      if(el)el.textContent=formatDuration(gt.start,now());
+    },1000);
+  }
+}
+
+function buildSections(items){
+  const secs=[];
+  let cur=null;
+  for(const it of items){
+    if(!cur||cur.name!==it.section){
+      cur={name:it.section,grp:it.grp,items:[]};
+      secs.push(cur);
+    }
+    cur.items.push(it);
+  }
+  return secs;
+}
+
+function toggleSection(grp){
+  const key=`${currentGate}_${grp}`;
+  expandedSections[key]=!expandedSections[key];
+  renderDetail();
+}
+
+function expandAll(){
+  const gate=G[currentGate];
+  const sections=buildSections(gate.items);
+  sections.forEach(sec=>{expandedSections[`${currentGate}_${sec.grp}`]=true;});
+  renderDetail();
+}
+
+function collapseAll(){
+  expandedSections={};
+  renderDetail();
+}
+
+function jumpToFirstIncomplete(){
+  const t=getTrailer(currentTrailerId);
+  const gate=G[currentGate];
+  const sections=buildSections(gate.items);
+  for(const sec of sections){
+    const hasIncomplete=sec.items.some(it=>!getItemStatus(t,currentGate,it.num));
+    if(hasIncomplete){
+      expandedSections[`${currentGate}_${sec.grp}`]=true;
+      renderDetail();
+      setTimeout(()=>{
+        const el=document.getElementById(`sec-${sec.grp}`);
+        if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+      },50);
+      return;
+    }
+  }
+}
+
+function switchGate(gid){currentGate=gid;renderDetail();}
+
+function onGateInspChange(val){
+  const t=getTrailer(currentTrailerId);
+  setGateInspector(t,val);
+}
+
+function startGateTimer(){
+  const t=getTrailer(currentTrailerId);
+  if(!t.gateTimes)t.gateTimes={};
+  t.gateTimes[currentGate]={start:now(),end:null};
+  addHistory(t,'gate-start',currentGate);
+  save();renderDetail();
+}
+
+function endGateTimer(){
+  const t=getTrailer(currentTrailerId);
+  if(t.gateTimes&&t.gateTimes[currentGate]){
+    t.gateTimes[currentGate].end=now();
+    addHistory(t,'gate-end',currentGate);
+    save();renderDetail();
+  }
+}
+
+function formatDuration(start,end){
+  const ms=new Date(end)-new Date(start);
+  const mins=Math.floor(ms/60000);
+  const secs=Math.floor((ms%60000)/1000);
+  return `${mins}m ${secs}s`;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CHECK ITEM RENDERING
+// ═════════════════════════════════════════════════════════════════════════════
+function renderCheckItem(t,item){
+  const key=`${currentGate}|${item.num}`;
+  const check=(t.checks||{})[key]||{};
+  const st=check.status;
+  const cls=st?`st-${st}`:'';
+
+  // Count photos, videos, voice notes for this item
+  const photoCount=check.photoCount||0;
+  const videoCount=check.videoCount||0;
+  const voiceCount=check.voiceCount||0;
+
+  let statusBox='';
+  if(st==='rejected'){
+    statusBox=`<div class="status-box rejected">
+      <div class="sb-title">🔴 QC-Rejected</div>
+      <div class="sb-meta">By ${e(check.by||'')} · ${fmtShort(check.at)}</div>
+      ${check.dept?`<div>Dept: <strong>${e(check.dept)}</strong></div>`:''}
+      ${check.fixAt?`<div>Fix at: ${e(check.fixAt)}</div>`:''}
+      ${check.rejectComment?`<div>Comment: ${e(check.rejectComment)}</div>`:''}
+      ${check.history?`<div style="margin-top:6px;font-size:10px;color:#888">Previously rejected ${check.history.length} time(s)</div>`:''}
+      <div class="sb-actions">
+        <button class="btn btn-sm btn-green" onclick="recheckItem('${key}','pass')">✅ Recheck Pass</button>
+        <button class="btn btn-sm btn-danger" onclick="recheckItem('${key}','rejected')">🔴 Re-reject</button>
+      </div>
+    </div>`;
+  }else if(st==='hold'){
+    const awaiting=!check.decision;
+    statusBox=`<div class="status-box hold">
+      <div class="sb-title">🟡 QC-Hold — ${awaiting?'Awaiting Decision':`Decision: ${check.decision}`}</div>
+      <div class="sb-meta">Escalated by ${e(check.by||'')} · ${fmtShort(check.at)}</div>
+      ${awaiting?`<div style="margin:6px 0"><span class="hakan-badge">👑 ${HAKAN_NAME}</span></div>
+      <div class="sb-actions">
+        <button class="btn btn-sm btn-green" onclick="decideHold('${key}','pass')">✅ Pass</button>
+        <button class="btn btn-sm btn-danger" onclick="decideHold('${key}','reject')">🔴 Reject</button>
+        <button class="btn btn-sm btn-blue" onclick="decideHold('${key}','letgo')">⏭️ Let Go</button>
+      </div>`:`<div>Decided by ${e(check.decisionBy)} · ${fmtShort(check.decisionAt)}</div>`}
+    </div>`;
+  }else if(st==='letgo'){
+    statusBox=`<div class="status-box letgo">
+      <div class="sb-title">⏭️ Let Go — ${e(check.letGoReason||'')}</div>
+      <div class="sb-meta">By ${e(check.by||'')} · ${fmtShort(check.at)}</div>
+      ${check.letGoNote?`<div>Note: ${e(check.letGoNote)}</div>`:''}
+      ${check.resolved?`<div style="color:var(--green)">✅ Resolved by ${e(check.resolvedBy)} · ${fmtShort(check.resolvedAt)}</div>`:
+      `<div class="sb-actions"><button class="btn btn-sm btn-green" onclick="resolveLetGo('${key}')">✅ Mark Resolved</button></div>`}
+    </div>`;
+  }
+
+  const btns=!st||st==='pass'?`
+    <div class="ci-actions">
+      <button class="${st==='pass'?'active-pass':''}" onclick="setItemStatus('${key}','pass')">✅ Pass</button>
+      <button class="" onclick="showRejectDialog('${key}')">🔴 Reject</button>
+      <button class="" onclick="showHoldDialog('${key}')">🟡 Hold</button>
+      <button class="" onclick="showLetGoDialog('${key}')">⏭️ Let Go</button>
+    </div>`:'';
+
+  // Media buttons row
+  let mediaCounts='';
+  const counts=[];
+  if(photoCount)counts.push(`${photoCount} photo${photoCount!==1?'s':''}`);
+  if(videoCount)counts.push(`${videoCount} video${videoCount!==1?'s':''}`);
+  if(voiceCount)counts.push(`${voiceCount} voice`);
+  if(counts.length)mediaCounts=`<span class="ci-media-counts">| ${counts.join(' · ')}</span>`;
+
+  const mediaBtns=`<div class="ci-media-btns">
+    <button class="ci-media-btn" onclick="takeItemPhoto('${key}')">📸 Photo</button>
+    <button class="ci-media-btn" onclick="takeItemVideo('${key}')">🎥 Video</button>
+    <button class="ci-media-btn" onclick="startVoiceRecording('${key}')">🎤 Voice</button>
+    ${mediaCounts}
+  </div>`;
+
+  return`<div class="ci ${cls}">
+    <div class="ci-header">
+      <span class="ci-num">${item.num}</span>
+      <span class="ci-desc">${e(item.desc)}</span>
+    </div>
+    ${btns}
+    <div class="ci-notes">
+      <input placeholder="Notes..." value="${e(check.notes||'')}" onchange="setItemNotes('${key}',this.value)">
+    </div>
+    ${mediaBtns}
+    ${statusBox}
+    ${check.lastAction?`<div class="ci-meta">Last: ${check.lastAction} by ${e(check.lastBy)} · ${fmtShort(check.lastAt)}</div>`:''}
+  </div>`;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ITEM ACTIONS
+// ═════════════════════════════════════════════════════════════════════════════
+function getCurrentInspector(){
+  const t=getTrailer(currentTrailerId);
+  return getCurrentGateInspector(t);
+}
+
+function setItemStatus(key,status){
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector for this gate first');return;}
+  const t=getTrailer(currentTrailerId);
+  if(!t.checks)t.checks={};
+  const prev=(t.checks[key]||{}).status;
+  t.checks[key]={...t.checks[key],status,by:insp,at:now(),lastAction:status,lastBy:insp,lastAt:now()};
+  t.approved=null;t.approvedAt=null;
+  addHistory(t,'check',key,prev,status,insp);
+  save();renderDetail();
+}
+
+function showRejectDialog(key){
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector for this gate first');return;}
+  showModal(`<h2>🔴 QC-Rejected</h2>
+    <div class="form-group"><label>Department *</label><select id="rej-dept"><option value="">Select...</option>${REJECT_DEPTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Fix at gate</label><select id="rej-fix"><option value="">Current gate</option>${GO.map(g=>`<option value="${g}">${GN[g]}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Comment</label><textarea id="rej-cmt" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmReject('${key}')">Confirm Rejection</button>
+    </div>`);
+}
+
+function confirmReject(key){
+  const dept=$('rej-dept').value;
+  if(!dept){alert('Please select a department');return;}
+  const fixAt=$('rej-fix').value;
+  const cmt=$('rej-cmt').value;
+  const insp=getCurrentInspector();
+  const t=getTrailer(currentTrailerId);
+  if(!t.checks)t.checks={};
+  const prevCheck=t.checks[key]||{};
+  const history=prevCheck.history||[];
+  if(prevCheck.status==='rejected'){
+    history.push({by:prevCheck.by,at:prevCheck.at,dept:prevCheck.dept});
+  }
+  t.checks[key]={
+    ...prevCheck,
+    status:'rejected',
+    by:insp,
+    at:now(),
+    dept:dept,
+    fixAt:fixAt||currentGate,
+    rejectComment:cmt,
+    history:history,
+    lastAction:'rejected',
+    lastBy:insp,
+    lastAt:now()
+  };
+  t.approved=null;t.approvedAt=null;
+  addHistory(t,'reject',key,prevCheck.status,'rejected',insp);
+  save();closeModal();renderDetail();
+}
+
+function recheckItem(key,result){
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector for this gate first');return;}
+  const t=getTrailer(currentTrailerId);
+  const prev=t.checks[key];
+  const history=prev.history||[];
+  history.push({by:prev.by,at:prev.at,dept:prev.dept,result:'rejected'});
+  t.checks[key]={
+    ...prev,
+    status:result==='pass'?'pass':'rejected',
+    recheckBy:insp,
+    recheckAt:now(),
+    history:history,
+    lastAction:'recheck-'+result,
+    lastBy:insp,
+    lastAt:now()
+  };
+  t.approved=null;t.approvedAt=null;
+  addHistory(t,'recheck',key,'rejected',result,insp);
+  save();renderDetail();
+}
+
+function showHoldDialog(key){
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector for this gate first');return;}
+  if(!confirm('Escalate to '+HAKAN_NAME+' for decision?'))return;
+  const t=getTrailer(currentTrailerId);
+  if(!t.checks)t.checks={};
+  const prev=(t.checks[key]||{}).status;
+  t.checks[key]={
+    ...t.checks[key],
+    status:'hold',
+    by:insp,
+    at:now(),
+    decision:null,
+    lastAction:'hold-escalated',
+    lastBy:insp,
+    lastAt:now()
+  };
+  t.approved=null;t.approvedAt=null;
+  addHistory(t,'hold',key,prev,'hold',insp);
+  save();renderDetail();
+}
+
+function decideHold(key,decision){
+  const t=getTrailer(currentTrailerId);
+  const check=t.checks[key];
+  check.decision=decision==='pass'?'Pass':decision==='reject'?'Reject':'Let Go';
+  check.decisionBy=HAKAN_NAME;
+  check.decisionAt=now();
+  check.status=decision==='pass'?'pass':decision==='reject'?'rejected':'letgo';
+  check.lastAction='hold-decided-'+decision;
+  check.lastBy=HAKAN_NAME;
+  check.lastAt=now();
+  t.approved=null;t.approvedAt=null;
+  addHistory(t,'hold-decision',key,'hold',check.status,HAKAN_NAME);
+  save();renderDetail();
+}
+
+function showLetGoDialog(key){
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector for this gate first');return;}
+  showModal(`<h2>⏭️ Let Go</h2>
+    <div class="form-group"><label>Reason *</label><select id="lg-reason"><option value="">Select...</option>${LETGO_REASONS.map(r=>`<option>${r}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Note</label><textarea id="lg-note" rows="2" placeholder="Additional details..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-blue" onclick="confirmLetGo('${key}')">Confirm Let Go</button>
+    </div>`);
+}
+
+function confirmLetGo(key){
+  const reason=$('lg-reason').value;
+  if(!reason){alert('Please select a reason');return;}
+  const note=$('lg-note').value;
+  const insp=getCurrentInspector();
+  const t=getTrailer(currentTrailerId);
+  if(!t.checks)t.checks={};
+  const prev=(t.checks[key]||{}).status;
+  t.checks[key]={
+    ...t.checks[key],
+    status:'letgo',
+    by:insp,
+    at:now(),
+    letGoReason:reason,
+    letGoNote:note,
+    resolved:false,
+    lastAction:'letgo',
+    lastBy:insp,
+    lastAt:now()
+  };
+  t.approved=null;t.approvedAt=null;
+  addHistory(t,'letgo',key,prev,'letgo',insp);
+  save();closeModal();renderDetail();
+}
+
+function resolveLetGo(key){
+  const note=prompt('Resolution notes:');
+  if(note===null)return;
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector for this gate first');return;}
+  const t=getTrailer(currentTrailerId);
+  const check=t.checks[key];
+  check.resolved=true;
+  check.resolvedBy=insp;
+  check.resolvedAt=now();
+  check.resolutionNote=note;
+  check.lastAction='resolved';
+  check.lastBy=insp;
+  check.lastAt=now();
+  save();renderDetail();
+}
+
+function setItemNotes(key,notes){
+  const t=getTrailer(currentTrailerId);
+  if(!t.checks)t.checks={};
+  if(!t.checks[key])t.checks[key]={};
+  t.checks[key].notes=notes;
+  save();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PHOTOS
+// ═════════════════════════════════════════════════════════════════════════════
+function takeItemPhoto(key){
+  pendingPhoto={trailerId:currentTrailerId,key:key,type:'item',mediaType:'photo'};
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';inp.capture='environment';
+  inp.onchange=handlePhotoCapture;
+  inp.click();
+}
+
+function handlePhotoCapture(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    pendingPhotoDataUrl=e.target.result;
+    showPhotoPreview(pendingPhotoDataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPhotoPreview(dataUrl){
+  pendingPhotoDataUrl=dataUrl;
+  showModal(`<div class="media-preview-modal">
+    <h2>📸 Photo Preview</h2>
+    <img src="${dataUrl}" class="preview-img">
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal()">❌ Cancel</button>
+      <button class="btn btn-orange" onclick="retakePhoto()">🔄 Retake</button>
+      <button class="btn btn-green" onclick="keepPhoto()">✅ Keep</button>
+    </div>
+  </div>`);
+}
+
+function retakePhoto(){
+  closeModal();
+  setTimeout(()=>{
+    const inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.capture='environment';
+    inp.onchange=handlePhotoCapture;
+    inp.click();
+  },100);
+}
+
+function keepPhoto(){
+  if(!pendingPhotoDataUrl)return;
+  const t=getTrailer(pendingPhoto.trailerId);
+  if(!t.photos)t.photos={};
+  const photoKey=`${pendingPhoto.key}_photo_${Date.now()}`;
+  t.photos[photoKey]={data:pendingPhotoDataUrl,at:now(),label:pendingPhoto.type==='item'?'Check Item':'Section'};
+  
+  // Update photo count on check item
+  if(pendingPhoto.type==='item'&&pendingPhoto.key.includes('|')){
+    if(!t.checks[pendingPhoto.key])t.checks[pendingPhoto.key]={};
+    t.checks[pendingPhoto.key].photoCount=(t.checks[pendingPhoto.key].photoCount||0)+1;
+  }
+  
+  pendingPhotoDataUrl=null;
+  save();closeModal();renderDetail();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// VIDEOS
+// ═════════════════════════════════════════════════════════════════════════════
+function takeItemVideo(key){
+  pendingPhoto={trailerId:currentTrailerId,key:key,type:'item',mediaType:'video'};
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='video/*';inp.capture='environment';
+  inp.onchange=handleVideoCapture;
+  inp.click();
+}
+
+function handleVideoCapture(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    pendingPhotoDataUrl=e.target.result;
+    showVideoPreview(pendingPhotoDataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showVideoPreview(dataUrl){
+  pendingPhotoDataUrl=dataUrl;
+  showModal(`<div class="media-preview-modal">
+    <h2>🎥 Video Preview</h2>
+    <video src="${dataUrl}" controls style="width:100%;border-radius:8px;max-height:60vh"></video>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal()">❌ Cancel</button>
+      <button class="btn btn-orange" onclick="retakeVideo()">🔄 Retake</button>
+      <button class="btn btn-green" onclick="keepVideo()">✅ Keep</button>
+    </div>
+  </div>`);
+}
+
+function retakeVideo(){
+  closeModal();
+  setTimeout(()=>{
+    const inp=document.createElement('input');
+    inp.type='file';inp.accept='video/*';inp.capture='environment';
+    inp.onchange=handleVideoCapture;
+    inp.click();
+  },100);
+}
+
+function keepVideo(){
+  if(!pendingPhotoDataUrl)return;
+  const t=getTrailer(pendingPhoto.trailerId);
+  if(!t.videos)t.videos={};
+  const videoKey=`${pendingPhoto.key}_video_${Date.now()}`;
+  t.videos[videoKey]={data:pendingPhotoDataUrl,at:now(),label:pendingPhoto.type==='item'?'Check Item':'Section'};
+  
+  // Update video count on check item
+  if(pendingPhoto.type==='item'&&pendingPhoto.key.includes('|')){
+    if(!t.checks[pendingPhoto.key])t.checks[pendingPhoto.key]={};
+    t.checks[pendingPhoto.key].videoCount=(t.checks[pendingPhoto.key].videoCount||0)+1;
+  }
+  
+  pendingPhotoDataUrl=null;
+  save();closeModal();renderDetail();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// VOICE NOTES
+// ═════════════════════════════════════════════════════════════════════════════
+function startVoiceRecording(key){
+  pendingPhoto={trailerId:currentTrailerId,key:key,type:'item',mediaType:'voice'};
+  navigator.mediaDevices.getUserMedia({audio:true})
+    .then(stream=>{
+      mediaRecorder=new MediaRecorder(stream);
+      audioChunks=[];
+      recordingSeconds=0;
+      
+      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRecorder.onstop=()=>{
+        const blob=new Blob(audioChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onload=ev=>showVoicePreview(ev.target.result);
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t=>t.stop());
+        clearInterval(recordingTimer);
+      };
+      
+      mediaRecorder.start();
+      // Show recording UI overlay
+      showModal(`<div style="text-align:center;padding:30px">
+        <div style="font-size:48px;animation:pulse 1s infinite">🔴</div>
+        <h2>Recording...</h2>
+        <div id="rec-timer" style="font-family:monospace;font-size:24px;margin:10px 0">0:00</div>
+        <button class="btn btn-danger" onclick="stopVoiceRecording()">⏹ Stop Recording</button>
+      </div>`);
+      
+      recordingTimer=setInterval(()=>{
+        recordingSeconds++;
+        const el=document.getElementById('rec-timer');
+        if(el)el.textContent=`${Math.floor(recordingSeconds/60)}:${(recordingSeconds%60).toString().padStart(2,'0')}`;
+      },1000);
+    })
+    .catch(err=>alert('Microphone access denied'));
+}
+
+function stopVoiceRecording(){
+  if(mediaRecorder&&mediaRecorder.state==='recording')mediaRecorder.stop();
+}
+
+function showVoicePreview(dataUrl){
+  pendingPhotoDataUrl=dataUrl;
+  showModal(`<div class="media-preview-modal">
+    <h2>🎤 Voice Note Preview</h2>
+    <audio src="${dataUrl}" controls style="width:100%;margin:12px 0"></audio>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal()">❌ Cancel</button>
+      <button class="btn btn-orange" onclick="reRecordVoice()">🔄 Re-record</button>
+      <button class="btn btn-green" onclick="keepVoice()">✅ Keep</button>
+    </div>
+  </div>`);
+}
+
+function reRecordVoice(){
+  closeModal();
+  setTimeout(()=>startVoiceRecording(pendingPhoto.key),100);
+}
+
+function keepVoice(){
+  if(!pendingPhotoDataUrl)return;
+  const t=getTrailer(pendingPhoto.trailerId);
+  if(!t.voiceNotes)t.voiceNotes={};
+  const voiceKey=`${pendingPhoto.key}_voice_${Date.now()}`;
+  t.voiceNotes[voiceKey]={data:pendingPhotoDataUrl,at:now(),label:pendingPhoto.type==='item'?'Check Item':'Section'};
+  
+  // Update voice count on check item
+  if(pendingPhoto.type==='item'&&pendingPhoto.key.includes('|')){
+    if(!t.checks[pendingPhoto.key])t.checks[pendingPhoto.key]={};
+    t.checks[pendingPhoto.key].voiceCount=(t.checks[pendingPhoto.key].voiceCount||0)+1;
+  }
+  
+  pendingPhotoDataUrl=null;
+  save();closeModal();renderDetail();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// OTHER TABS
+// ═════════════════════════════════════════════════════════════════════════════
+function renderBuildsheetTab(t,mc){
+  mc.innerHTML=`<div class="bs-card">
+    <h3>📄 Buildsheet — ${e(t.model)}</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:10px">${e(t.customer)} · ${e(t.inv)}</p>
+    <div class="fg"><label>Build Notes</label><textarea rows="6" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px" onchange="updateBuildsheet(this.value)">${e(t.buildsheet||'')}</textarea></div>
+  </div>`;
+}
+
+function updateBuildsheet(val){
+  const t=getTrailer(currentTrailerId);
+  t.buildsheet=val;save();
+}
+
+function renderFeaturesTab(t,mc){
+  const feats=MODEL_FEATURES[t.model]||[];
+  mc.innerHTML=`<div class="bs-card">
+    <h3>✅ Standard Features — ${e(t.model)}</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:10px">Verify these features are present</p>
+    ${feats.length?`<ul class="feat-list">${feats.map(f=>`<li>${e(f)}</li>`).join('')}</ul>`:
+    `<div class="empty-state">No standard features defined for this model</div>`}
+  </div>`;
+}
+
+function renderStandardsTab(t,mc){
+  const standards=[
+    {t:'Cabinet Gap Tolerance',d:'Max gap ≤ ½". Shim if > ¼".'},
+    {t:'Flooring Flatness',d:'≤ ⅛" variation over 6 ft. No soft/spongy feel.'},
+    {t:'Headliner Installation',d:'Free from wrinkles, damage. Cut straight.'},
+    {t:'Window Sealant',d:'Butyl sealant continuous around full perimeter.'},
+    {t:'Trim Fit',d:'Flush against structures. No gaps or loose sections.'},
+    {t:'Wiring',d:'No exposed copper. Supported, no kinks.'}
+  ];
+  mc.innerHTML=`<div class="bs-card"><h3>📐 Visual Quality Standards</h3>
+    ${standards.map(s=>`<div style="padding:12px;background:#f5f5f5;border-radius:8px;margin:8px 0">
+      <strong style="font-size:13px">${e(s.t)}</strong>
+      <p style="font-size:12px;color:#666;margin-top:4px">${e(s.d)}</p>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderPhotosTab(t,mc){
+  const photos=Object.entries(t.photos||{}).sort((a,b)=>(b[1].at||'').localeCompare(a[1].at||''));
+  const videos=Object.entries(t.videos||{}).sort((a,b)=>(b[1].at||'').localeCompare(a[1].at||''));
+  const voices=Object.entries(t.voiceNotes||{}).sort((a,b)=>(b[1].at||'').localeCompare(a[1].at||''));
+  const allMedia=[
+    ...photos.map(([k,v])=>({k,v,type:'photo'})),
+    ...videos.map(([k,v])=>({k,v,type:'video'})),
+    ...voices.map(([k,v])=>({k,v,type:'voice'}))
+  ].sort((a,b)=>(b.v.at||'').localeCompare(a.v.at||''));
+  
+  mc.innerHTML=`<div style="margin-top:8px">
+    <h3 style="color:var(--navy);margin-bottom:10px">📸 Photos (${photos.length}) · 🎥 Videos (${videos.length}) · 🎤 Voice (${voices.length})</h3>
+    ${allMedia.length?`<div class="photo-grid">${allMedia.map(({k,v,type})=>{
+      if(type==='photo'){
+        return`<div class="photo-card">
+          <img src="${v.data}" onclick="viewMedia('${k}','photo')">
+          <div class="pc-info">${e(v.label||'')} · ${fmtShort(v.at)}</div>
+        </div>`;
+      }else if(type==='video'){
+        return`<div class="photo-card" onclick="viewMedia('${k}','video')">
+          <video src="${v.data}"></video>
+          <div class="play-overlay">▶️</div>
+          <div class="pc-info">${e(v.label||'')} · ${fmtShort(v.at)}</div>
+        </div>`;
+      }else{
+        return`<div class="photo-card" onclick="viewMedia('${k}','voice')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:120px;background:#f5f5f5">
+          <div style="font-size:32px">🎤</div>
+          <div class="pc-info">${e(v.label||'')} · ${fmtShort(v.at)}</div>
+        </div>`;
+      }
+    }).join('')}</div>`:
+    `<div class="empty-state">No media yet. Use buttons on check items to capture.</div>`}
+  </div>`;
+}
+
+function viewMedia(key,type){
+  const t=getTrailer(currentTrailerId);
+  if(type==='photo'){
+    const p=t.photos[key];if(!p)return;
+    showModal(`<div style="text-align:center"><img src="${p.data}" style="max-width:100%;border-radius:8px"><p style="margin:8px 0;font-size:13px">${e(p.label||'')} · ${fmtShort(p.at)}</p><button class="btn btn-gray btn-block" onclick="closeModal()">Close</button></div>`);
+  }else if(type==='video'){
+    const v=t.videos[key];if(!v)return;
+    showModal(`<div style="text-align:center"><video src="${v.data}" controls style="max-width:100%;border-radius:8px"><p style="margin:8px 0;font-size:13px">${e(v.label||'')} · ${fmtShort(v.at)}</p><button class="btn btn-gray btn-block" onclick="closeModal()">Close</button></div>`);
+  }else{
+    const vn=t.voiceNotes[key];if(!vn)return;
+    showModal(`<div style="text-align:center"><audio src="${vn.data}" controls style="width:100%;margin:12px 0"></audio><p style="margin:8px 0;font-size:13px">${e(vn.label||'')} · ${fmtShort(vn.at)}</p><button class="btn btn-gray btn-block" onclick="closeModal()">Close</button></div>`);
+  }
+}
+
+function renderLayoutTab(t,mc){
+  mc.innerHTML=`<div class="bs-card"><h3>🗺️ Trailer Layout</h3>
+    <div class="empty-state">Layout view coming soon</div>
+  </div>`;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// REWORK DASHBOARD
+// ═════════════════════════════════════════════════════════════════════════════
+function showReworkDashboard(){showView('rework');}
+
+function renderReworkDashboard(){
+  const el=$('rework-content');
+  const byDept={};
+  REJECT_DEPTS.forEach(d=>byDept[d]=[]);
+  
+  for(const t of trailers){
+    for(const gid of GO){
+      for(const it of G[gid].items){
+        const check=(t.checks||{})[`${gid}|${it.num}`];
+        if(check&&check.status==='rejected'){
+          byDept[check.dept||'Other'].push({t,gid,it,check});
+        }
+      }
+    }
+  }
+  
+  let html='';
+  for(const dept of REJECT_DEPTS){
+    const items=byDept[dept];
+    if(!items.length)continue;
+    html+=`<div class="rework-section">
+      <h3>${e(dept)} (${items.length})</h3>
+      ${items.map(({t,gid,it,check})=>`<div class="rework-item">
+        <div class="ri-header">${e(t.customer)} — ${e(t.model)} · ${e(t.inv)}</div>
+        <div class="ri-desc">${GI[gid]} ${GN[gid]} · <strong>${it.num}</strong> — ${e(it.desc)}</div>
+        <div class="ri-meta">🔴 Rejected by ${e(check.by)} · ${fmtShort(check.at)}${check.fixAt?` · Fix at: ${GN[check.fixAt]||check.fixAt}`:''}</div>
+        <div class="ri-actions">
+          <button class="btn btn-sm btn-green" onclick="reworkFromDash('${t.id}','${gid}|${it.num}','pass')">✅ Recheck Pass</button>
+          <button class="btn btn-sm btn-danger" onclick="reworkFromDash('${t.id}','${gid}|${it.num}','rejected')">🔴 Re-reject</button>
+          <button class="btn btn-sm btn-navy" onclick="openTrailer('${t.id}')">View Trailer</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+  
+  if(!html)html=`<div class="empty-state"><div class="icon">🔧</div><p>No open rework items!</p></div>`;
+  el.innerHTML=html;
+}
+
+function reworkFromDash(trailerId,key,result){
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector first (go to trailer Quality Gates tab)');return;}
+  const t=getTrailer(trailerId);
+  const prev=t.checks[key];
+  const history=prev.history||[];
+  history.push({by:prev.by,at:prev.at,dept:prev.dept,result:'rejected'});
+  t.checks[key]={
+    ...prev,
+    status:result==='pass'?'pass':'rejected',
+    recheckBy:insp,
+    recheckAt:now(),
+    history:history,
+    lastAction:'recheck-'+result,
+    lastBy:insp,
+    lastAt:now()
+  };
+  save();
+  renderReworkDashboard();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PUNCH LIST
+// ═════════════════════════════════════════════════════════════════════════════
+function showPunchList(){showView('punch');}
+function setPunchFilter(f){punchFilter=f;renderPunchList();}
+
+function renderPunchList(){
+  document.querySelectorAll('#punch-filters button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#punch-filters button')[punchFilter==='open'?0:punchFilter==='resolved'?1:2].classList.add('active');
+  
+  const items=[];
+  for(const t of trailers){
+    for(const gid of GO){
+      for(const it of G[gid].items){
+        const check=(t.checks||{})[`${gid}|${it.num}`];
+        if(check&&check.status==='letgo'){
+          const isResolved=check.resolved;
+          if(punchFilter==='open'&&!isResolved)items.push({t,gid,it,check});
+          if(punchFilter==='resolved'&&isResolved)items.push({t,gid,it,check});
+          if(punchFilter==='all')items.push({t,gid,it,check});
+        }
+      }
+    }
+  }
+  
+  const el=$('punch-content');
+  if(!items.length){el.innerHTML=`<div class="empty-state"><div class="icon">📋</div><p>No ${punchFilter} Let Go items</p></div>`;return;}
+  
+  el.innerHTML=items.map(({t,gid,it,check})=>`<div class="punch-item ${check.resolved?'resolved':''}">
+    <div class="pi-header">${e(t.customer)} — ${e(t.model)} · ${e(t.inv)}</div>
+    <span class="pi-reason">${e(check.letGoReason||'')}</span>
+    <div class="pi-meta">${GI[gid]} ${GN[gid]} · ${it.num} — ${e(it.desc)}</div>
+    <div class="pi-meta">By ${e(check.by)} · ${fmtShort(check.at)}</div>
+    ${check.letGoNote?`<div class="pi-notes">${e(check.letGoNote)}</div>`:''}
+    ${check.resolved?`<div style="color:var(--green);font-size:12px">✅ Resolved by ${e(check.resolvedBy)} · ${fmtShort(check.resolvedAt)}</div>`:
+    `<div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-sm btn-green" onclick="resolveFromPunch('${t.id}','${gid}|${it.num}')">✅ Resolve</button>
+      <button class="btn btn-sm btn-navy" onclick="openTrailer('${t.id}')">View Trailer</button>
+    </div>`}
+  </div>`).join('');
+}
+
+function resolveFromPunch(trailerId,key){
+  const note=prompt('Resolution notes:');
+  if(note===null)return;
+  const insp=getCurrentInspector();
+  if(!insp){alert('Please select an inspector first (go to trailer Quality Gates tab)');return;}
+  const t=getTrailer(trailerId);
+  const check=t.checks[key];
+  check.resolved=true;
+  check.resolvedBy=insp;
+  check.resolvedAt=now();
+  check.resolutionNote=note;
+  check.lastAction='resolved';
+  check.lastBy=insp;
+  check.lastAt=now();
+  save();
+  renderPunchList();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// APPROVAL & HISTORY
+// ═════════════════════════════════════════════════════════════════════════════
+function approveTrailer(){
+  if(!confirm(`Confirm final approval by ${HAKAN_NAME}?`))return;
+  const t=getTrailer(currentTrailerId);
+  t.approved=HAKAN_NAME;
+  t.approvedAt=now();
+  addHistory(t,'approval','final',null,'approved',HAKAN_NAME);
+  save();renderDetail();
+}
+
+function revokeApproval(){
+  if(!confirm('Revoke approval?'))return;
+  const t=getTrailer(currentTrailerId);
+  t.approved=null;
+  t.approvedAt=null;
+  addHistory(t,'revoke-approval','final',null,'revoked','user');
+  save();renderDetail();
+}
+
+function addHistory(trailer,action,key=null,from=null,to=null,by=null){
+  if(!trailer.history)trailer.history=[];
+  trailer.history.push({action,key,from,to,by,at:now()});
+}
+
+function showHistory(){
+  const t=getTrailer(currentTrailerId);
+  const h=(t.history||[]).slice().reverse();
+  let html=`<h2>📋 History Log</h2><p style="font-size:12px;color:#888;margin-bottom:12px">${e(t.customer)} · ${e(t.inv)}</p>`;
+  if(!h.length)html+=`<p style="color:#aaa">No history entries</p>`;
+  else html+=h.map(x=>`<div class="history-item">
+    <span class="time">${fmtShort(x.at)}</span>
+    <span>${x.action}${x.key?': '+x.key.split('|')[1]:''}${x.to?' → '+x.to:''} — ${e(x.by||'')}</span>
+  </div>`).join('');
+  html+=`<button class="btn btn-gray btn-block" style="margin-top:14px" onclick="closeModal()">Close</button>`;
+  showModal(html);
+}
+
+function showFilteredItems(filterType){
+  const t=getTrailer(currentTrailerId);
+  let html=`<h2>${filterType==='rejected'?'🔴 Rejections':filterType==='hold'?'🟡 Holds':'⏭️ Let Go Items'}</h2>`;
+  let found=false;
+  for(const gid of GO){
+    const items=G[gid].items.filter(it=>getItemStatus(t,gid,it.num)===filterType);
+    if(!items.length)continue;
+    found=true;
+    html+=`<div style="margin:10px 0"><strong style="color:var(--navy)">${GI[gid]} ${GN[gid]}</strong></div>`;
+    html+=items.map(it=>`<div style="padding:8px;background:#f5f5f5;border-radius:8px;margin:4px 0;font-size:12px"><strong>${it.num}</strong> — ${e(it.desc)}</div>`).join('');
+  }
+  if(!found)html+=`<p style="color:#aaa">No ${filterType} items found</p>`;
+  html+=`<button class="btn btn-gray btn-block" style="margin-top:14px" onclick="closeModal()">Close</button>`;
+  showModal(html);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// UTILITIES
+// ═════════════════════════════════════════════════════════════════════════════
+function showModal(content){
+  $('mc').innerHTML=content;
+  $('mo').classList.add('active');
+}
+
+function closeModal(){
+  $('mo').classList.remove('active');
+}
+
+$('mo').onclick=ev=>{if(ev.target===$('mo'))closeModal();};
+
+function exportData(){
+  const data={trailers,exportedAt:now(),version:'v3'};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`escape-qg-v3-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Init
+renderList();
+</script>
+</body>
+</html>

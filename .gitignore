@@ -1,0 +1,4 @@
+.DS_Store
+
+# Runtime databases and signing material are private deployment data.
+quality-gates-v4/data/

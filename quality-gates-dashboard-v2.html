@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Escape Trailer — Quality Gates</title>
+<style>
+:root{--navy:#1a1a2e;--blue:#0d47a1;--green:#2e7d32;--red:#c62828;--orange:#e65100;--purple:#6a1b9a;--gray:#546e7a;--bg:#f5f6fa;--card:#fff;--shadow:0 2px 12px rgba(0,0,0,.08);--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#333;-webkit-tap-highlight-color:transparent}
+.topbar{background:var(--navy);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:17px;font-weight:700}.topbar h1 span{opacity:.6;font-weight:400;font-size:13px}
+.topbar-actions{display:flex;gap:6px}
+.topbar-actions button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.view{display:none;padding:14px;max-width:960px;margin:0 auto}.view.active{display:block}
+.btn{display:inline-block;padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary{background:var(--blue);color:#fff}.btn-danger{background:var(--red);color:#fff}
+.btn-green{background:var(--green);color:#fff}.btn-orange{background:var(--orange);color:#fff}
+.btn-gray{background:#78909c;color:#fff}.btn-navy{background:var(--navy);color:#fff}
+.btn-sm{padding:7px 12px;font-size:12px}.btn-block{display:block;width:100%;text-align:center}
+
+/* TRAILER CARDS */
+.trailer-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-left:5px solid transparent}
+.trailer-card:active{transform:scale(.98)}.trailer-card.complete{border-left-color:var(--green)}
+.trailer-card.has-issues{border-left-color:var(--red)}.trailer-card.in-progress{border-left-color:var(--blue)}
+.trailer-card .info h3{font-size:15px;color:var(--navy)}.trailer-card .info p{font-size:12px;color:#888;margin-top:2px}
+.trailer-card .pct{font-size:22px;font-weight:700}
+.progress-bar{width:100px;height:5px;background:#e0e0e0;border-radius:3px;margin-top:3px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:3px}
+
+/* FORM */
+.form-card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.form-card h2{font-size:17px;margin-bottom:14px;color:var(--navy)}
+.fg{margin-bottom:12px}.fg label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+
+/* MAIN TABS (inside trailer) */
+.main-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0;-webkit-overflow-scrolling:touch;border-bottom:2px solid #e0e0e0;margin-bottom:10px}
+.main-tab{flex-shrink:0;padding:8px 14px;border-radius:8px 8px 0 0;background:#e8eaf6;color:var(--navy);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.main-tab.active{background:var(--navy);color:#fff}
+
+/* GATE TABS */
+.gate-tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.gate-tab{flex-shrink:0;padding:8px 14px;border-radius:18px;background:#e8eaf6;color:var(--navy);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;position:relative}
+.gate-tab.active{background:var(--navy);color:#fff}
+.gate-tab .badge{position:absolute;top:-3px;right:-3px;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* INSPECTOR + TIME */
+.bar{border-radius:8px;padding:8px 12px;margin:6px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.bar-insp{background:#e3f2fd}.bar-time{background:#f3e5f5}
+.bar label{font-weight:600;white-space:nowrap}
+.bar select{flex:1;min-width:130px;padding:7px;border:2px solid #90caf9;border-radius:6px;font-size:13px}
+.bar .tv{font-family:monospace;font-size:13px}
+
+/* SECTIONS & ITEMS */
+.sec-hdr{background:#e8eaf6;padding:9px 12px;border-radius:8px;margin:10px 0 5px;font-weight:700;font-size:13px;color:var(--navy);display:flex;justify-content:space-between;align-items:center}
+.sec-hdr .cnt{font-weight:400;font-size:11px;color:#666}
+.sec-hdr .photo-btn{background:var(--blue);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+
+.ci{background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:5px;box-shadow:0 1px 3px rgba(0,0,0,.04);border-left:4px solid transparent}
+.ci .ct{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ci .cn{font-weight:700;color:var(--blue);font-size:12px;min-width:36px}
+.ci .cd{flex:1;font-size:12px;line-height:1.35}
+.ci .ca{display:flex;gap:5px;flex-shrink:0}
+.ci .ca button{width:40px;height:40px;border-radius:7px;border:2px solid #e0e0e0;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ci .ca button:active{transform:scale(.9)}
+.ci .ca button.sp{background:#e8f5e9;border-color:var(--green)}
+.ci .ca button.sr{background:#fff3e0;border-color:var(--orange)}
+.ci .ca button.sf{background:#ffebee;border-color:var(--red)}
+.ci.st-pass{border-left-color:var(--green)}.ci.st-rework{border-left-color:var(--orange);background:#fffde7}
+.ci.st-fail{border-left-color:var(--red);background:#fff5f5}
+.ci.st-recheck-pass{border-left-color:var(--green);background:#e8f5e9}
+.ci.st-recheck-fail{border-left-color:var(--red);background:#fce4ec}
+.ci .cm{margin-top:3px;font-size:10px;color:#999}
+.ci .cc input{width:100%;padding:6px;border:1px solid #e0e0e0;border-radius:5px;font-size:12px;margin-top:4px}
+.rwbox{margin-top:6px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px}
+.rwbox.fail-box{background:#ffebee;border-color:#ef9a9a}
+.rwbox .rwl{font-size:11px;font-weight:600;margin-bottom:5px}
+.rwbox .rwa{display:flex;gap:5px}
+
+/* BANNERS */
+.ab{padding:10px 14px;border-radius:10px;margin:5px 0;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer;color:#fff}
+.ab .abc{background:rgba(255,255,255,.3);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.ab-rw{background:linear-gradient(135deg,#ff8f00,#e65100)}.ab-fail{background:linear-gradient(135deg,#e53935,#b71c1c)}
+
+/* APPROVAL */
+.ap-bar{background:linear-gradient(135deg,#1a1a2e,#283593);color:#fff;border-radius:10px;padding:16px;margin:10px 0;text-align:center}
+.ap-bar h3{font-size:15px;margin-bottom:6px}.ap-bar .aps{font-size:12px;opacity:.8;margin-bottom:8px}
+
+/* SUMMARY */
+.sr{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}
+.sc{background:var(--card);border-radius:10px;padding:8px;text-align:center;box-shadow:var(--shadow)}
+.sc .n{font-size:20px;font-weight:700}.sc .l{font-size:9px;color:#888;margin-top:1px}
+
+/* PHOTO GRID */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:10px 0}
+.photo-card{background:var(--card);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+.photo-card img{width:100%;height:120px;object-fit:cover;cursor:pointer}
+.photo-card .pc-info{padding:6px;font-size:11px;color:#666}
+.photo-upload{border:2px dashed #ccc;border-radius:8px;padding:20px;text-align:center;cursor:pointer;color:#888;font-size:13px}
+.photo-upload:hover{border-color:var(--blue);color:var(--blue)}
+
+/* FEATURES LIST */
+.feat-list{list-style:none}.feat-list li{padding:8px 12px;background:var(--card);border-radius:8px;margin:4px 0;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.feat-list li::before{content:'✅';font-size:14px}
+
+/* BUILDSHEET */
+.bs-section{background:var(--card);border-radius:var(--r);padding:14px;margin:8px 0;box-shadow:var(--shadow)}
+.bs-section h3{font-size:14px;color:var(--navy);margin-bottom:8px}
+
+/* VISUAL STANDARDS */
+.vs-card{background:var(--card);border-radius:var(--r);padding:14px;margin:8px 0;box-shadow:var(--shadow)}
+.vs-card h3{font-size:14px;color:var(--navy);margin-bottom:6px}
+.vs-card .vs-desc{font-size:12px;color:#666;margin-bottom:8px}
+.vs-examples{display:flex;gap:8px;overflow-x:auto}
+.vs-ex{flex-shrink:0;width:140px;border-radius:8px;overflow:hidden;border:2px solid #e0e0e0}
+.vs-ex img{width:100%;height:100px;object-fit:cover}
+.vs-ex .vl{padding:4px 6px;font-size:10px;text-align:center;font-weight:600}
+.vs-ex.good{border-color:var(--green)}.vs-ex.good .vl{color:var(--green);background:#e8f5e9}
+.vs-ex.bad{border-color:var(--red)}.vs-ex.bad .vl{color:var(--red);background:#ffebee}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:20px;max-width:540px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.he{padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:11px;display:flex;gap:6px}
+.he .ht{color:#999;min-width:120px}
+
+@media(max-width:600px){.sr{grid-template-columns:repeat(3,1fr)}.topbar h1{font-size:14px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🚐 Escape Trailer <span>Quality Gates</span></h1>
+  <div class="topbar-actions">
+    <button onclick="showView('list')">🏠</button>
+    <button onclick="exportData()">📤</button>
+  </div>
+</div>
+
+<div id="view-list" class="view active">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h2 style="font-size:18px;color:var(--navy)">Trailer Cards</h2>
+    <button class="btn btn-primary btn-sm" onclick="showView('new')">+ New Trailer</button>
+  </div>
+  <div id="tlist"></div>
+  <div id="no-t" style="text-align:center;padding:50px 20px;color:#aaa;font-size:14px;display:none">No trailers yet. Tap <b>+ New Trailer</b></div>
+</div>
+
+<div id="view-new" class="view">
+  <div class="form-card">
+    <h2>🆕 New Trailer Card</h2>
+    <div class="fg"><label>Customer Name</label><input id="i-cust" placeholder="John Smith"></div>
+    <div class="fg"><label>Inventory Number</label><input id="i-inv" placeholder="ET-2026-0142"></div>
+    <div class="fg"><label>Trailer Model</label>
+      <select id="i-model"><option value="">Select...</option>
+        <option>ET 17</option><option>ET 19</option><option>ET 21</option>
+        <option>ET 21NE</option><option>ET 23</option><option>ET 25</option>
+        <option value="__c">Custom...</option>
+      </select>
+    </div>
+    <div class="fg" id="cg" style="display:none"><label>Custom Model</label><input id="i-cmod"></div>
+    <div class="fg"><label>Buildsheet Notes (optional)</label><textarea id="i-bs" rows="3" placeholder="Special options, customer requests, deviations..."></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-gray btn-sm" onclick="showView('list')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="createT()">Create</button>
+    </div>
+  </div>
+</div>
+
+<div id="view-detail" class="view">
+  <div id="d-hdr"></div>
+  <div class="sr" id="d-sum"></div>
+  <div id="d-banners"></div>
+  <div id="d-approval"></div>
+  <div class="main-tabs" id="main-tabs"></div>
+  <div id="main-content"></div>
+</div>
+
+<div class="modal-overlay" id="mo"><div class="modal" id="mc"></div></div>
+
+<script>
+const G={"bld-c": {"name": "Bld C", "items": [{"grp": "1", "section": "Blocks Installation", "num": "1.1", "desc": "Verify blocks are level, securely positioned, and correctly placed according to model specifications with a 3/16\" allowance for windows."}, {"grp": "2", "section": "Belly Band Installation", "num": "2.1", "desc": "Ensure alignment and secure attachment. Check for rivets, no gaps on corners or edges, and ensure no gaps on the top."}, {"grp": "3", "section": "Window-Hatch frames", "num": "3.1", "desc": "Verify window frames are level, securely positioned, and correctly placed according to model specifications"}, {"grp": "3", "section": "Window-Hatch frames", "num": "3.2", "desc": "Verify hatch frames are level, securely positioned, and correctly placed according to model specifications including additional block"}, {"grp": "4", "section": "Fiberglass Installation-Tabbing", "num": "4.1", "desc": "Ensure fiberglass is properly aligned, secured, and check for bubbles or anomalies in internal fiberglass covering blocks."}, {"grp": "4", "section": "Fiberglass Installation-Tabbing", "num": "4.2", "desc": "Resin tags on inner shell that inhibit headliner install"}, {"grp": "5", "section": "Cut-outs and Installation", "num": "5.1", "desc": "Ensure window cut-outs are precise, clean, and aligned with respective components."}, {"grp": "5", "section": "Cut-outs and Installation", "num": "5.2", "desc": "Ensure hatch cut-outs are precise, clean, and aligned with respective components."}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.1", "desc": "Ensure solar panels are securely installed"}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.2", "desc": "Sealed with Proflex where necessary to prevent leaks"}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.3", "desc": "Verify lights are straight, securely mounted, aligned, and lens color matches build sheet."}, {"grp": "6", "section": "Solar and Exterior Lights", "num": "6.4", "desc": "Confirm all brake lights are aligned."}, {"grp": "7", "section": "Headliner", "num": "7.1", "desc": "Confirm headliner is free from damage, wrinkles and securely installed. Cut straight"}, {"grp": "7", "section": "Headliner", "num": "7.2", "desc": "Check for 2\" Flaps either side of top of Door headliner"}, {"grp": "7", "section": "Headliner", "num": "7.3", "desc": "Check short cut sections and joints"}, {"grp": "7", "section": "Headliner", "num": "7.4", "desc": "Check headliner glue leftovers"}, {"grp": "8", "section": "Cement/Mud at Entrance", "num": "8.1", "desc": "Verify cement/mud application is even and smooth at the entrance area and the whole aisle"}, {"grp": "9", "section": "Floor Control & Leveling", "num": "9.1", "desc": "Use a level to ensure floors are even with no dips. Flatness: \u2264 1/8\u201d variation over 6 ft"}, {"grp": "9", "section": "Floor Control & Leveling", "num": "9.2", "desc": "Check pin locations, layout based on trailer type"}, {"grp": "10", "section": "Wireless Camera Installation", "num": "10.1", "desc": "Confirm camera installation is secure"}, {"grp": "11", "section": "Speaker Wiring, Required Drops", "num": "11.1", "desc": "Confirm speaker wiring (if needed), wire drops"}, {"grp": "12", "section": "Flooring", "num": "12.1", "desc": "Ensure vinyl flooring is installed flat, secure, durable, and visually clean, with no defects"}, {"grp": "12", "section": "Flooring", "num": "12.2", "desc": "No gaps, overlaps, or lifting edges. No soft or spongy feel"}, {"grp": "12", "section": "Flooring", "num": "12.3", "desc": "Check pin locations, screws placed before viynl layout based on trailer type."}, {"grp": "13", "section": "Awning", "num": "13.1", "desc": "Brackets and put on straight and level?"}]}, "pod1": {"name": "POD1", "items": [{"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.1", "desc": "Overhead cabinets installed level, square, and fully seated in correct position."}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.2", "desc": "Gap between cabinet and wall is \u2264 1/2\". No shim required if gap is \u2264 1/4\". Shims must be used if gap is > 1/4\" and \u2264 1/2\". No gap > 1/2\" acceptable without QC approval."}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.3", "desc": "Cabinets sit flush with wall with no twisting or leaning.No movement when pushed."}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.4", "desc": "No headliner wrinkles, creases during installation"}, {"grp": "1", "section": "Overhead Cabinets Installation", "num": "1.5", "desc": "Cabinet surfaces clean and free from damage."}, {"grp": "2", "section": "Installing Walls", "num": "2.1", "desc": "Walls installed, leveled, square, and fully seated."}, {"grp": "2", "section": "Installing Walls", "num": "2.2", "desc": "Gap between cabinet and wall is \u2264 1/2\". No shim required if gap is \u2264 1/4\". Shims must be used if gap is > 1/4\" and \u2264 1/2\". No gap > 1/2\" acceptable without QC approval."}, {"grp": "2", "section": "Installing Walls", "num": "2.3", "desc": "Wall surfaces clean and free from damage. No voids or soft spots detected."}, {"grp": "2", "section": "Installing Walls", "num": "2.4", "desc": "No headliner wrinkles, creases during installation"}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.1", "desc": "Benches installed, leveled, square, fully seated."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.2", "desc": "No rocking or movement when pressure applied."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.3", "desc": "Bench fully supported at mounting points."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.4", "desc": "No excessive gaps(>1/16\") between bench and structures."}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.5", "desc": "Supports load with no flexing or instability.(~200 lbs)"}, {"grp": "3", "section": "Bed&Benches Installation", "num": "3.6", "desc": "Surfaces clean and free from damage."}, {"grp": "4", "section": "Plumbing", "num": "4.1", "desc": "Plumbing lines routed with no kinks or pinches."}, {"grp": "4", "section": "Plumbing", "num": "4.2", "desc": "Visible fittings properly connected."}, {"grp": "4", "section": "Plumbing", "num": "4.3", "desc": "Hot/cold lines positioned per layout."}, {"grp": "4", "section": "Plumbing", "num": "4.4", "desc": "Drain lines aligned and supported."}, {"grp": "4", "section": "Plumbing", "num": "4.5", "desc": "No stress or sharp bends on lines."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.1", "desc": "Wiring routed with no kinks or pinches."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.2", "desc": "Wires supported using designated paths."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.3", "desc": "No exposed copper or damaged insulation."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.4", "desc": "Harnesses positioned per model layout."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.5", "desc": "No tension or overstretching on wiring."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.6", "desc": "No loose or unsupported wiring."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.7", "desc": "Surge protector installed correctly."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.8", "desc": "DC-to-DC controller installed correctly."}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.9", "desc": "Plugs/outlets positioned correctly. Check for optional outlets (120V/12V/USB)"}, {"grp": "5", "section": "Electrical & Wire Setup", "num": "5.10", "desc": "Interior lights positioned correctly without visible gap."}, {"grp": "6", "section": "Shower Installation", "num": "6.1", "desc": "Shower pan stable with no flexing."}, {"grp": "6", "section": "Shower Installation", "num": "6.2", "desc": "Shower shells positioned with no overlapping"}, {"grp": "6", "section": "Shower Installation", "num": "6.3", "desc": "Plumbing visually aligned."}, {"grp": "6", "section": "Shower Installation", "num": "6.4", "desc": "No cracks or stress marks."}, {"grp": "6", "section": "Shower Installation", "num": "6.5", "desc": "Components fit flush with no gaps."}, {"grp": "6", "section": "Shower Installation", "num": "6.6", "desc": "Surfaces clean and free from damage."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.1", "desc": "Trim installed with consistent placement."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.2", "desc": "Trim sits flush against structures."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.3", "desc": "No gaps or loose sections."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.4", "desc": "Edges and seams uniform."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "7.5", "desc": "Surfaces free from damage."}, {"grp": "7", "section": "Trim & Finishing (U-shape and J-trim) plastic", "num": "8.1", "desc": "Components solid with no movement."}, {"grp": "8", "section": "Shower Installation", "num": "8.2", "desc": "No twisting or instability."}, {"grp": "8", "section": "Shower Installation", "num": "8.3", "desc": "Joints and seams seated properly."}, {"grp": "8", "section": "Shower Installation", "num": "8.4", "desc": "No cracks or material defects."}, {"grp": "8", "section": "Shower Installation", "num": "8.5", "desc": "Overall installation clean and aligned."}, {"grp": "8", "section": "Shower Installation", "num": "8.5", "desc": "Components fit flush with no gaps."}, {"grp": "8", "section": "Shower Installation", "num": "8.6", "desc": "Surfaces clean and free from damage."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.1", "desc": "Fresh water lines routed with no kinks."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.2", "desc": "Lines supported and guided properly."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.3", "desc": "No rubbing or sharp-edge contact."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.4", "desc": "Drain lines aligned and supported."}, {"grp": "9", "section": "Water & Drain Lines", "num": "9.5", "desc": "All lines positioned per layout."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.1", "desc": "Trim installed with consistent placement."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.2", "desc": "Trim sits flush against structures."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.3", "desc": "No gaps or loose sections."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.4", "desc": "Edges and seams uniform."}, {"grp": "10", "section": "Trim & Finishing", "num": "10.5", "desc": "Surfaces free from damage."}, {"grp": "11", "section": "Structural Checks", "num": "11.1", "desc": "Components solid with no movement."}, {"grp": "11", "section": "Structural Checks", "num": "11.2", "desc": "No twisting or instability."}, {"grp": "11", "section": "Structural Checks", "num": "11.3", "desc": "Joints and seams seated properly."}, {"grp": "11", "section": "Structural Checks", "num": "11.4", "desc": "No cracks or material defects."}, {"grp": "11", "section": "Structural Checks", "num": "11.5", "desc": "Overall installation clean and aligned."}]}, "pod2": {"name": "POD2", "items": [{"grp": "1", "section": "Kitchen Cabinets", "num": "1.1", "desc": "Cabinets installed level, square, seated."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.2", "desc": "Cabinets sit flush with no excessive gaps."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.3", "desc": "Alignment consistent across kitchen."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.4", "desc": "No twisting or movement when pressed."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.5", "desc": "Surfaces clean and free from damage."}, {"grp": "1", "section": "Kitchen Cabinets", "num": "1.6", "desc": "Seams and edges uniform."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.1", "desc": "Face frames installed level, square, fully seated."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.2", "desc": "Frames sit flush with no excessive gaps(>1/16\")."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.3", "desc": "Dovetail Joint Quality Check: Fit & Tightness, Flush Surfaces, No Splitting or Cracks"}, {"grp": "2", "section": "Kitchen Faces", "num": "2.4", "desc": "No twisting or bowing under pressure."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.5", "desc": "Alignment consistent between faces. Edges and seams uniform and clean."}, {"grp": "2", "section": "Kitchen Faces", "num": "2.6", "desc": "Surfaces clean and free from damage."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.1", "desc": "Countertops installed in correct location, sit flat with no rocking or flexing and fully supported."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.2", "desc": "Countertop edges aligned with cabinets and adjoining surfaces."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.3", "desc": "Plastic trims installed, seated properly, and consistent along all edges."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.4", "desc": "Cabinets installed square and level (no twist, tilt, or step)."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.5", "desc": "Bottom of cubbies installed flat and fully supported."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.6", "desc": "No internal gaps greater than 1/4\" inside cubbies or cabinet interiors."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.7", "desc": "No visible gaps greater than 1/16\" in finished areas without trim."}, {"grp": "3", "section": "Kitchen Cabinets (Countertop / Trims / Squareness / Alignment)", "num": "3.8", "desc": "Cabinet and countertop surfaces clean and free from scratches, chips, dents, or glue residue."}, {"grp": "4", "section": "Windows", "num": "4.1", "desc": "Windows installed in correct openings according to model layout."}, {"grp": "4", "section": "Windows", "num": "4.2", "desc": "Window frames seated evenly and square in the opening."}, {"grp": "4", "section": "Windows", "num": "4.3", "desc": "Sealant (butyl) applied continuously around full perimeter."}, {"grp": "4", "section": "Windows", "num": "4.4", "desc": "All window mounting screws tightened and seated properly."}, {"grp": "4", "section": "Windows", "num": "4.5", "desc": "No visible gaps between window frame and fiberglass body."}, {"grp": "4", "section": "Windows", "num": "4.6", "desc": "Window opens and closes smoothly (if operable)."}, {"grp": "4", "section": "Windows", "num": "4.7", "desc": "Screens installed correctly (if applicable)."}, {"grp": "4", "section": "Windows", "num": "4.8", "desc": "Glass and frames clean and free from cracks, chips, or major scratches."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.1", "desc": "Hatches installed in correct locations according to model layout."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.2", "desc": "Hatch frames sit flush and fully seated against surface."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.3", "desc": "Sealant applied evenly around full perimeter."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.4", "desc": "All hatch mounting screws tightened and seated properly."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.5", "desc": "Hatch opens and closes smoothly without binding."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.6", "desc": "Latches or locks engage properly and hold hatch closed."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.7", "desc": "No warping, cracking, or damage to hatch or frame."}, {"grp": "5", "section": "Hatches (Roof & Side)", "num": "5.8", "desc": "Surrounding surface clean and free from tool marks or excess sealant."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.1", "desc": "120V outlets installed in correct locations, seated flush and loomed"}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.2", "desc": "USB outlets installed correctly and aligned."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.3", "desc": "Surge protector installed in correct location per model layout."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.4", "desc": "Controllers (solar / charging / system) mounted securely and oriented correctly."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.5", "desc": "Converter box installed and seated properly."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.6", "desc": "Monitor panels installed, aligned, and readable."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.7", "desc": "Wiring to components not exposed, pinched, or under tension."}, {"grp": "6", "section": "Electrical Components (120V / USB / Controllers / Converter / Monitors)", "num": "6.8", "desc": "No visible damage, cracks, or broken covers on electrical components."}, {"grp": "7", "section": "Interior Lights", "num": "7.1", "desc": "Interior lights installed in correct locations according to model layout."}, {"grp": "7", "section": "Interior Lights", "num": "7.2", "desc": "Light fixtures sit flush with ceiling or wall surfaces."}, {"grp": "7", "section": "Interior Lights", "num": "7.3", "desc": "No visible gaps, tilting, or loose fixtures."}, {"grp": "7", "section": "Interior Lights", "num": "7.4", "desc": "Wiring not exposed, pinched, or visible at fixtures."}, {"grp": "7", "section": "Interior Lights", "num": "7.5", "desc": "Light lenses and covers installed correctly and clean."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.1", "desc": "Fresh water lines routed with no kinks."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.2", "desc": "Lines supported and guided properly."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.3", "desc": "No rubbing or sharp-edge contact."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.4", "desc": "Drain lines aligned and supported."}, {"grp": "8", "section": "Water & Drain Lines", "num": "8.5", "desc": "All lines positioned per layout."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.1", "desc": "Hot water tank installed in correct location and orientation."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.2", "desc": "Tank seated securely with no rocking or movement."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.3", "desc": "Hot, cold, and relief lines connected and routed correctly."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.4", "desc": "No visible pinching, sharp bends, or stress on lines."}, {"grp": "9", "section": "Hot Water Tank", "num": "9.5", "desc": "Vent or exhaust aligned correctly (if applicable)."}, {"grp": "10", "section": "Furnace", "num": "10.1", "desc": "Furnace installed in correct location and orientation."}, {"grp": "10", "section": "Furnace", "num": "10.2", "desc": "Unit seated fully and supported correctly."}, {"grp": "10", "section": "Furnace", "num": "10.3", "desc": "Ducting connected and routed according to standard work."}, {"grp": "10", "section": "Furnace", "num": "10.4", "desc": "No visible pinched, crushed, or disconnected ducts."}, {"grp": "10", "section": "Furnace", "num": "10.5", "desc": "Wiring and gas line routed cleanly with no stress or tension."}, {"grp": "10", "section": "Furnace", "num": "10.6", "desc": "Required clearances maintained."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.1", "desc": "Roof components installed in correct locations per model layout."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.2", "desc": "Components sit flat and fully seated on roof surface."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.3", "desc": "Sealant applied with full coverage and no visible gaps."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.4", "desc": "No lifting, shifting, or distortion visible."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.5", "desc": "Roof surface around components clean and undamaged."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.6", "desc": "City water inlet installed flush and aligned."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.7", "desc": "No visible gaps around inlet opening."}, {"grp": "11", "section": "Exterior Components-1", "num": "11.8", "desc": "Sealant clean and properly seated."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.1", "desc": "Jack antenna installed in correct location and orientation."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.2", "desc": "Base seated flush with exterior surface."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.3", "desc": "Sealant applied evenly around base."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.4", "desc": "No gaps or loose movement."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.5", "desc": "Exterior shower box installed square and flush to body."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.6", "desc": "Door opens and closes smoothly."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.7", "desc": "No visible gaps around box perimeter."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.8", "desc": "Hoses and fittings positioned neatly inside cavity."}, {"grp": "12", "section": "Exterior Components-2", "num": "12.9", "desc": "Sealant clean, continuous, and complete."}]}, "pod3": {"name": "POD3", "items": [{"grp": "1", "section": "Cabinet Door Installation", "num": "1.1", "desc": "Cabinet doors installed in correct locations according to model layout."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.2", "desc": "Doors aligned square and level with consistent reveal on all sides."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.3", "desc": "No rubbing, binding, or interference when opening or closing."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.4", "desc": "Door gaps even left-to-right and top-to-bottom."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.5", "desc": "Hinges seated properly with no visible misalignment."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.6", "desc": "Doors stay in position and do not swing open or closed by themselves."}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.7", "desc": "No visible gaps greater than 1/16\" in finished areas.(not more than bumpers)"}, {"grp": "1", "section": "Cabinet Door Installation", "num": "1.8", "desc": "Door surfaces clean and free from scratches, dents, chips, or glue marks."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.1", "desc": "Cubbies installed square and level in correct locations."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.2", "desc": "Bottom and sides fully supported with no soft spots or flexing."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.3", "desc": "No internal gaps greater than 1/4\u2033 inside cubby space."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.4", "desc": "No visible gaps greater than 1/16\u2033 on exposed edges without trim."}, {"grp": "2", "section": "Cubby/Wardrobe", "num": "2.5", "desc": "Surfaces clean and free from scratches, chips, or glue marks."}, {"grp": "3", "section": "Final Trim", "num": "3.1", "desc": "All remaining interior trim pieces installed according to standard work."}, {"grp": "3", "section": "Final Trim", "num": "3.2", "desc": "Trim sits flush against walls, ceilings, and cabinets."}, {"grp": "3", "section": "Final Trim", "num": "3.3", "desc": "No gaps, lifting, or loose trim visible."}, {"grp": "3", "section": "Final Trim", "num": "3.4", "desc": "Joints and corners aligned and uniform."}, {"grp": "3", "section": "Final Trim", "num": "3.5", "desc": "Surfaces clean and free from dents, scratches, chips, or excess sealant."}, {"grp": "4", "section": "Shelves", "num": "4.1", "desc": "Shelves installed in correct locations according to model layout."}, {"grp": "4", "section": "Shelves", "num": "4.2", "desc": "Shelves sit flat and fully supported along brackets or supports."}, {"grp": "4", "section": "Shelves", "num": "4.3", "desc": "No rocking, sagging, or movement when light pressure is applied."}, {"grp": "4", "section": "Shelves", "num": "4.4", "desc": "Shelf edges aligned with cabinet/cubby faces where applicable."}, {"grp": "4", "section": "Shelves", "num": "4.5", "desc": "Surfaces clean and free from scratches, chips, or tool marks."}, {"grp": "5", "section": "Drawers", "num": "5.1", "desc": "Drawers installed in correct locations according to model layout."}, {"grp": "5", "section": "Drawers", "num": "5.2", "desc": "Drawers slide open and closed smoothly without binding."}, {"grp": "5", "section": "Drawers", "num": "5.3", "desc": "Drawer fronts aligned and even with surrounding cabinet faces."}, {"grp": "5", "section": "Drawers", "num": "5.4", "desc": "No excessive side-to-side or vertical movement."}, {"grp": "5", "section": "Drawers", "num": "5.5", "desc": "Drawer stops and slides seated fully and function correctly."}, {"grp": "5", "section": "Drawers", "num": "5.6", "desc": "Surfaces clean and free from scratches, dents, or chips."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.1", "desc": "Bathroom door installed square and level in the opening."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.2", "desc": "Door opens and closes smoothly with no rubbing or binding."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.3", "desc": "Latch engages correctly and holds door in closed position."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.4", "desc": "Trim installed around door frame and seated flush."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.5", "desc": "No visible gaps greater than 1/16\" in finished trim areas."}, {"grp": "5", "section": "Bathroom Door with Trim", "num": "6.6", "desc": "No visible damage, scratches, dents, or chips on door or trim."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.1", "desc": "Bed lids installed in correct locations and orientation."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.2", "desc": "Bench lids installed in correct locations and orientation."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.3", "desc": "Hinges seated properly with smooth opening and closing motion."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.4", "desc": "Lids sit flush when closed with no rocking or misalignment."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.5", "desc": "No visible gaps greater than 1/16\" in visible finished areas."}, {"grp": "7", "section": "Bed & Bench Lids", "num": "7.6", "desc": "Surfaces clean and free from scratches, dents, or damage."}, {"grp": "8", "section": "Bathroom Components", "num": "8.1", "desc": "Medicine cabinet installed in correct location, seated square and level."}, {"grp": "8", "section": "Bathroom Components", "num": "8.2", "desc": "Cabinet door opens and closes smoothly with no rubbing or interference."}, {"grp": "8", "section": "Bathroom Components", "num": "8.3", "desc": "No visible gaps greater than 1/16\" around cabinet edges in finished areas."}, {"grp": "8", "section": "Bathroom Components", "num": "8.4", "desc": "Shower curtain rail installed securely and level."}, {"grp": "8", "section": "Bathroom Components", "num": "8.5", "desc": "Curtain rings/clips mounted correctly and move smoothly along the rail."}, {"grp": "8", "section": "Bathroom Components", "num": "8.6", "desc": "Toilet paper holder installed in correct position and seated firmly."}, {"grp": "8", "section": "Bathroom Components", "num": "8.7", "desc": "No wobble, looseness, or misalignment at mounting point."}, {"grp": "8", "section": "Bathroom Components", "num": "8.8", "desc": "Shower wand installed in correct position and seated in holder properly."}, {"grp": "8", "section": "Bathroom Components", "num": "8.9", "desc": "Hose routed neatly with no kinks, twisting, or pinching."}, {"grp": "8", "section": "Bathroom Components", "num": "8.1", "desc": "Bellyband Proflex applied evenly along the required seam/edge."}, {"grp": "8", "section": "Bathroom Components", "num": "8.11", "desc": "No visible gaps, lifting, or breaks in proflex line."}, {"grp": "8", "section": "Bathroom Components", "num": "8.12", "desc": "Proflex line appears clean, continuous, and professionally finished."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.1", "desc": "Support pole installed in correct location and orientation."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.2", "desc": "Pole seated firmly at both top and bottom contact points."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.3", "desc": "No wobble, movement, or play when light pressure is applied."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.4", "desc": "Contact surfaces show no damage or distortion."}, {"grp": "9", "section": "Support Pole Installation", "num": "9.5", "desc": "Pole finish clean, straight, and undamaged."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.1", "desc": "Blinds and valances installed in correct locations and orientation."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.2", "desc": "Valances sit level and tight to the mounting surface with no visible gaps."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.3", "desc": "Blinds move up/down smoothly without rubbing or interference."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.4", "desc": "Rangehood installed level in correct location according to layout."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.5", "desc": "Rangehood vent and cover aligned and seated properly (visual check)."}, {"grp": "10", "section": "Blinds / Valances / Rangehood", "num": "10.6", "desc": "All visible surfaces clean and free from dents, scratches, or damage."}, {"grp": "11", "section": "Awning", "num": "11.1", "desc": "Awning installed in correct position according to model layout. Proflexed"}, {"grp": "11", "section": "Awning", "num": "11.2", "desc": "Awning rail and brackets seated tight against body with no gaps."}, {"grp": "11", "section": "Awning", "num": "11.3", "desc": "All visible fasteners installed and seated properly (no missing screws)."}, {"grp": "11", "section": "Awning", "num": "11.4", "desc": "Awning housing appears straight with no visible twist or bow."}, {"grp": "11", "section": "Awning", "num": "11.5", "desc": "Fabric (if visible) free from tears, major wrinkles, or damage."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.1", "desc": "Battery compartment or battery box installed in correct location."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.2", "desc": "Battery secured to prevent movement during travel (straps/clamps as per standard)."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.3", "desc": "Cables routed according to standard work with no pinching, rubbing, or sharp bends."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.4", "desc": "Inverter mounted in correct location with proper clearance around unit."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.5", "desc": "Visible wiring to inverter supported and not under tension."}, {"grp": "12", "section": "Battery / Inverter", "num": "12.6", "desc": "Battery and inverter area clean, organized, and free from loose items. Wires through floor proflexed"}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.1", "desc": "Main door installed square and level in the opening."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.2", "desc": "Door closes fully without rubbing on frame or threshold."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.3", "desc": "Door latch engages and holds securely in closed position."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.4", "desc": "Gasket/ seal around door seated properly and continuous."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.5", "desc": "No visible gaps between door and frame beyond standard allowance."}, {"grp": "13", "section": "Main Door with Screen door", "num": "13.6", "desc": "Door surface and frame free from dents, scratches, or damage."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.1", "desc": "Corner pads installed in all designated locations according to model layout."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.2", "desc": "Pads seated flat and fully supported with no lifting or curling."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.3", "desc": "No visible gaps between pad and wall/floor surface."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.4", "desc": "Adhesion appears consistent with no loose edges."}, {"grp": "14", "section": "Corner Pad Installation", "num": "14.5", "desc": "Surfaces clean with no excess glue, sealant, or smearing visible."}, {"grp": "15", "section": "Table Installation", "num": "15.1", "desc": "Table installed in correct location and orientation according to model layout."}, {"grp": "15", "section": "Table Installation", "num": "15.2", "desc": "Table top sits level with no rocking or instability."}, {"grp": "15", "section": "Table Installation", "num": "15.3", "desc": "Support base / leg secured and seated properly."}, {"grp": "15", "section": "Table Installation", "num": "15.4", "desc": "No visible gaps between table base and floor/wall mounting points."}, {"grp": "15", "section": "Table Installation", "num": "15.5", "desc": "Table surface clean and free from scratches, dents, or chips."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.1", "desc": "Proflex applied to all required interior and exterior joints and seams."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.2", "desc": "All critical areas (windows, doors, hatches, roof components, trims, belly band) are sealed."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.3", "desc": "Bead is continuous, consistent, and properly tooled."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.4", "desc": "No visible gaps, air pockets, skips, or broken seal lines."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.5", "desc": "No excessive smearing on surrounding surfaces."}, {"grp": "16", "section": "Proflexing \u2013 Interior & Exterior (Against Leaks)", "num": "16.6", "desc": "All sealing appears watertight and professionally finished."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.1", "desc": "All visible staple holes filled completely."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.2", "desc": "Filler sits flush with surrounding surface (no sink, bump, or ridge)."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.3", "desc": "No visible unfilled holes in finished areas."}, {"grp": "17", "section": "Filling Staple Holes", "num": "17.4", "desc": "Finished surface smooth and ready for final inspection."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.1", "desc": "All dust, debris, and loose material removed from floor and surfaces."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.2", "desc": "Cabinets, shelves, cubbies, and bathroom wiped clean."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.3", "desc": "No sawdust, fasteners, or scrap material left inside unit."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.4", "desc": "Windows, counters, and mirrors wiped and clean."}, {"grp": "18", "section": "Clean Trailer (Interior)", "num": "18.5", "desc": "Overall interior presents as finished and ready for next stage / PDI."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.1", "desc": "Step installed in correct position and seated securely against the body."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.2", "desc": "No visible movement, wobble, or misalignment at step mounting points."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.3", "desc": "Tire brackets installed in correct locations and aligned properly."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.4", "desc": "Brackets are seated flush and secured firmly."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.5", "desc": "Tires mounted correctly on brackets and secured for transport."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.6", "desc": "Fire extinguisher installed in designated location and accessible."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.7", "desc": "Mount is secure with no movement under light pull."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.8", "desc": "Smoke detector installed in correct ceiling location."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.9", "desc": "CO detector installed in correct location according to standard."}, {"grp": "19", "section": "Others \u2013 Safety & Exterior Hardware", "num": "19.1", "desc": "Detectors mounted flush with no visible gaps, tilt, or loose fit."}]}, "hoist-frame": {"name": "Hoist-frame", "items": [{"grp": "1", "section": "Frame Welds & Joints (Crossmembers &Support)", "num": "1.1", "desc": "Inspect for cracks, gaps, or poor weld penetration"}, {"grp": "2", "section": "Undercarriage Coating", "num": "2.1", "desc": "Ensure complete rust protection and no exposed metal"}, {"grp": "3", "section": "Axle Mounts and Hardware", "num": "3.1", "desc": "Verify tight torque and correct installation of bolts and fasteners"}, {"grp": "4", "section": "Safety Chains & Hitch Mounting Points", "num": "4.1", "desc": "Confirm correct spacing and alignment"}, {"grp": "5", "section": "Brake Wiring and Connections", "num": "5.1", "desc": "Verify wiring is routed securely and connections are weather-sealed"}, {"grp": "6", "section": "Hub Grease & Bearings", "num": "6.1", "desc": "Confirm proper lubrication and torque specification"}, {"grp": "7", "section": "Underplumbing Check", "num": "7.1", "desc": "Verify all plumbing under the trailer is properly secured, leak-free, and routed away from potential abrasion or heat sources."}, {"grp": "8", "section": "Plumbing Glue Application", "num": "8.1", "desc": "Ensure no visible extra glue and that all plumbing joints are properly glued and sealed."}, {"grp": "9", "section": "Cable Management", "num": "9.1", "desc": "Verify that all cables are protected with loom and secured to prevent movement or wear."}, {"grp": "10", "section": "Termination Valve Function", "num": "10.1", "desc": "Confirm the termination valve operates smoothly, with secure lids and connections."}, {"grp": "11", "section": "Hole Sealing", "num": "11.1", "desc": "All holes through the underbody or frame should be fully sealed with spray foam to prevent intrusion."}]}};
+const GO=['bld-c','pod1','pod2','pod3','hoist-frame'];
+const GN={'bld-c':'Bld C','pod1':'POD-1','pod2':'POD-2','pod3':'POD-3','hoist-frame':'Hoist & Frame'};
+const GI={'bld-c':'🏗️','pod1':'🔧','pod2':'⚡','pod3':'🪟','hoist-frame':'🔩'};
+const GC={'bld-c':'#0d47a1','pod1':'#bf360c','pod2':'#1b5e20','pod3':'#6a1b9a','hoist-frame':'#880e4f'};
+const FEAT={"ET 17": ["Single Axle", "Rear Hatch", "1 x MaxxFan", "Roof Solar (200W)", "Composting Toilet", "6 gal Water Heater", "Dometic Fridge", "2-Burner Cooktop", "Dinette Conversion Bed"], "ET 19": ["Single Axle", "Rear Hatch", "2 x MaxxFan", "Roof Solar (200W)", "Composting Toilet", "6 gal Water Heater", "Dometic Fridge", "2-Burner Cooktop", "Murphy Bed or Dinette"], "ET 21": ["Tandem Axle", "Rear Hatch", "2 x MaxxFan", "Roof Solar (400W)", "Composting Toilet", "6 gal Water Heater", "Dometic Fridge", "3-Burner Range", "Queen Bed", "A/C Ready"], "ET 21NE": ["Tandem Axle", "No Rear Hatch", "2 x MaxxFan", "Roof Solar (400W)", "Composting Toilet", "6 gal Water Heater", "Dometic Fridge", "3-Burner Range", "Queen Murphy Bed", "A/C Ready"], "ET 23": ["Tandem Axle", "Rear Hatch", "2 x MaxxFan", "Roof Solar (400W)", "Composting Toilet", "6 gal Water Heater", "Dometic Fridge", "3-Burner Range", "Queen Bed", "Full Dry Bath", "A/C Ready"], "ET 25": ["Tandem Axle", "Rear Hatch", "3 x MaxxFan", "Roof Solar (600W)", "Composting Toilet", "6 gal Water Heater", "Dometic Fridge", "3-Burner Range", "Queen Bed", "Full Dry Bath", "Microwave", "A/C Ready"]};
+
+let TT=JSON.parse(localStorage.getItem('et_qg3')||'[]');
+let cId=null,cGate=null,cTab='gates';
+const sv=()=>localStorage.setItem('et_qg3',JSON.stringify(TT));
+const $=id=>document.getElementById(id);
+const Tr=id=>TT.find(t=>t.id===id);
+const e=s=>(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const N=()=>new Date().toISOString();
+const F=d=>d?new Date(d).toLocaleString():'—';
+const Fs=d=>d?new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+new Date(d).toLocaleDateString([],{month:'short',day:'numeric'}):'—';
+const showView=n=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$('view-'+n).classList.add('active');if(n==='list')renderList();};
+
+$('i-model').onchange=ev=>{$('cg').style.display=ev.target.value==='__c'?'block':'none';};
+
+// ── STATS ──
+function iSt(t,gid,num){const x=(t.checks||{})[gid+'|'+num];return x?x.status:null;}
+function stats(t,gid){
+  let p=0,f=0,rw=0,pn=0,tot=0,dn=0;
+  const items=gid?G[gid].items:GO.flatMap(g=>G[g].items.map(i=>({...i,_g:g})));
+  for(const it of items){tot++;const s=iSt(t,gid||it._g,it.num);
+    if(!s){pn++;continue;}
+    if(s==='pass'||s==='recheck-pass'){p++;dn++;}
+    else if(s==='fail'||s==='recheck-fail'){f++;dn++;}
+    else if(s==='rework'){rw++;}
+  }
+  return{pass:p,fail:f,rework:rw,pending:pn,total:tot,done:dn};
+}
+
+// ── LIST ──
+function renderList(){
+  const el=$('tlist'),no=$('no-t');
+  if(!TT.length){el.innerHTML='';no.style.display='block';return;}
+  no.style.display='none';
+  el.innerHTML=TT.map(t=>{
+    const s=stats(t);const pct=s.total?Math.round(s.done/s.total*100):0;
+    const clr=pct===100?'var(--green)':pct>50?'var(--blue)':pct>0?'var(--orange)':'#ccc';
+    const cls=s.fail>0?'has-issues':pct===100&&t.approved?'complete':'in-progress';
+    return `<div class="trailer-card ${cls}" onclick="openT('${t.id}')">
+      <div class="info">
+        <h3>${e(t.customer)} — ${e(t.model)}</h3>
+        <p>${e(t.inv)} · ${Fs(t.created)}</p>
+        <p style="margin-top:2px;font-size:11px">✅${s.pass} 🔄${s.rework} ❌${s.fail} ⏳${s.pending}${t.approved?' · ✔️Approved':''}</p>
+      </div>
+      <div style="text-align:right">
+        <div class="pct" style="color:${clr}">${pct}%</div>
+        <div class="progress-bar"><div class="fill" style="width:${pct}%;background:${clr}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CREATE ──
+function createT(){
+  const customer=$('i-cust').value.trim(),inv=$('i-inv').value.trim();
+  let model=$('i-model').value;if(model==='__c')model=$('i-cmod').value.trim();
+  if(!customer||!inv||!model){alert('Fill all fields');return;}
+  const bs=$('i-bs').value.trim();
+  TT.unshift({id:'tr_'+Date.now(),customer,inv,model,created:N(),checks:{},history:[],gateTimes:{},photos:{},buildsheet:bs,approved:null,approvedAt:null});
+  sv();openT(TT[0].id);
+}
+
+// ── OPEN ──
+function openT(id){cId=id;cGate=GO[0];cTab='gates';renderD();showView('detail');}
+
+// ── MAIN TABS ──
+const MTABS=[
+  {id:'gates',icon:'📋',label:'Quality Gates'},
+  {id:'buildsheet',icon:'📄',label:'Buildsheet'},
+  {id:'features',icon:'✅',label:'Standard Features'},
+  {id:'standards',icon:'📐',label:'Visual Standards'},
+  {id:'photos',icon:'📸',label:'Photos'},
+  {id:'layout',icon:'🗺️',label:'Trailer Layout'}
+];
+
+function renderD(){
+  const t=Tr(cId);if(!t)return;
+  const s=stats(t);const pct=s.total?Math.round(s.done/s.total*100):0;
+
+  $('d-hdr').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+    <div><h2 style="font-size:17px;color:var(--navy)">${e(t.customer)} — ${e(t.model)}</h2>
+    <p style="font-size:12px;color:#888">${e(t.inv)} · Started ${Fs(t.created)}</p></div>
+    <div style="display:flex;gap:5px">
+      <button class="btn btn-sm btn-gray" onclick="showHist()">📋</button>
+      <button class="btn btn-sm btn-gray" onclick="showView('list')">←</button>
+      <button class="btn btn-sm btn-danger" onclick="delT()">🗑️</button>
+    </div></div>`;
+
+  $('d-sum').innerHTML=`
+    <div class="sc"><div class="n" style="color:var(--green)">${s.pass}</div><div class="l">Pass</div></div>
+    <div class="sc"><div class="n" style="color:var(--orange)">${s.rework}</div><div class="l">Rework</div></div>
+    <div class="sc"><div class="n" style="color:var(--red)">${s.fail}</div><div class="l">Fail</div></div>
+    <div class="sc"><div class="n" style="color:var(--blue)">${s.pending}</div><div class="l">Pending</div></div>
+    <div class="sc"><div class="n" style="color:${pct===100?'var(--green)':'#333'}">${pct}%</div><div class="l">Done</div></div>`;
+
+  let banners='';
+  if(s.fail>0)banners+=`<div class="ab ab-fail" onclick="showIssues('fail')"><div class="abc">${s.fail}</div>Failed items need attention</div>`;
+  if(s.rework>0)banners+=`<div class="ab ab-rw" onclick="showIssues('rework')"><div class="abc">${s.rework}</div>Rework awaiting recheck</div>`;
+  $('d-banners').innerHTML=banners;
+
+  let ap='';
+  if(t.approved){ap=`<div class="ap-bar"><div style="font-size:24px">✅ APPROVED</div><h3>Final Approval: ${e(t.approved)}</h3><div class="aps">${F(t.approvedAt)}</div></div>`;}
+  else if(s.pending===0&&s.rework===0&&s.fail===0&&s.total>0){ap=`<div class="ap-bar"><h3>🎉 All checks passed</h3><div class="aps">Ready for final approval</div><button class="btn btn-green" onclick="approve()">✅ Approve — Hakan Yasar</button></div>`;}
+  $('d-approval').innerHTML=ap;
+
+  $('main-tabs').innerHTML=MTABS.map(mt=>`<div class="main-tab ${mt.id===cTab?'active':''}" onclick="switchMain('${mt.id}')">${mt.icon} ${mt.label}</div>`).join('');
+
+  renderMainContent(t);
+}
+
+function switchMain(tab){cTab=tab;renderD();}
+
+function renderMainContent(t){
+  const mc=$('main-content');
+  if(cTab==='gates')renderGates(t,mc);
+  else if(cTab==='buildsheet')renderBuildsheet(t,mc);
+  else if(cTab==='features')renderFeatures(t,mc);
+  else if(cTab==='standards')renderStandards(t,mc);
+  else if(cTab==='photos')renderPhotos(t,mc);
+  else if(cTab==='layout')renderLayout(t,mc);
+}
+
+// ══════════════════════════════════════════
+// TAB: QUALITY GATES
+// ══════════════════════════════════════════
+function renderGates(t,mc){
+  let html=`<div class="gate-tabs" style="margin-top:8px">${GO.map(gid=>{
+    const gs=stats(t,gid);const act=gid===cGate?'active':'';
+    let badge='';
+    if(gs.fail>0)badge=`<span class="badge" style="background:var(--red)">${gs.fail}</span>`;
+    else if(gs.rework>0)badge=`<span class="badge" style="background:var(--orange)">${gs.rework}</span>`;
+    else if(gs.done===gs.total&&gs.total>0)badge='<span class="badge" style="background:var(--green)">✓</span>';
+    return `<div class="gate-tab ${act}" onclick="sGate('${gid}')">${GI[gid]} ${GN[gid]} ${badge}</div>`;
+  }).join('')}</div>`;
+
+  // Gate time bar
+  const gt=(t.gateTimes||{})[cGate]||{};
+  html+=`<div class="bar bar-time"><label style="color:var(--purple)">⏱️ ${GN[cGate]}</label>`;
+  if(!gt.start)html+=`<button class="btn btn-sm btn-primary" onclick="startGT()">▶ Start</button>`;
+  else{
+    html+=`<span>Start: <span class="tv">${Fs(gt.start)}</span></span>`;
+    if(gt.end){const dur=Math.round((new Date(gt.end)-new Date(gt.start))/60000);html+=`<span>End: <span class="tv">${Fs(gt.end)}</span></span><span>⏱ <span class="tv">${dur}min</span></span>`;}
+    else html+=`<button class="btn btn-sm btn-orange" onclick="endGT()">⏹ Finish</button>`;
+  }
+  html+=`</div>`;
+
+  // Inspector
+  html+=`<div class="bar bar-insp"><label style="color:var(--blue)">👤 Inspector:</label>
+    <select id="sel-insp"><option value="">Select...</option>
+    <option>Desiree</option><option>Nicolas</option><option>Mehran</option><option>David</option><option>Jeff</option></select></div>`;
+
+  // Checklist
+  const gate=G[cGate];let secs=[],cur=null;
+  for(const it of gate.items){if(!cur||cur.name!==it.section){cur={name:it.section,grp:it.grp,items:[]};secs.push(cur);}cur.items.push(it);}
+
+  html+=secs.map(sec=>{
+    const done=sec.items.filter(it=>{const s=iSt(t,cGate,it.num);return s&&s!=='rework';}).length;
+    const secKey=cGate+'_'+sec.grp;
+    const photoCount=Object.keys(t.photos||{}).filter(k=>k.startsWith(secKey+'_')).length;
+    return `<div class="sec-hdr"><span>${sec.grp}. ${sec.name}</span><span class="cnt">${done}/${sec.items.length}${photoCount?' · 📸'+photoCount:''} <button class="photo-btn" onclick="addSectionPhoto('${secKey}','${e(sec.name)}')">📸</button></span></div>`
+      +sec.items.map(it=>renderCI(t,it)).join('');
+  }).join('');
+
+  mc.innerHTML=html;
+}
+
+function sGate(g){cGate=g;renderD();}
+function startGT(){const t=Tr(cId);if(!t.gateTimes)t.gateTimes={};t.gateTimes[cGate]={start:N(),end:null};t.history.push({action:'gate-start',gate:cGate,at:N()});sv();renderD();}
+function endGT(){const t=Tr(cId);if(t.gateTimes&&t.gateTimes[cGate])t.gateTimes[cGate].end=N();t.history.push({action:'gate-end',gate:cGate,at:N()});sv();renderD();}
+
+function renderCI(t,item){
+  const key=cGate+'|'+item.num;const x=(t.checks||{})[key]||{};const st=x.status||'';
+  const cls=st?'st-'+st:'';
+  let act='';
+  if(st==='rework'){
+    act=`<div class="rwbox"><div class="rwl" style="color:var(--orange)">🔄 Rework — ${e(x.by)} · ${Fs(x.at)}</div>
+    <div class="rwa"><button class="btn btn-sm btn-green" onclick="recheck('${key}','pass')">✅ Pass</button>
+    <button class="btn btn-sm btn-danger" onclick="recheck('${key}','fail')">❌ Fail</button></div></div>`;
+  } else if(st==='fail'||st==='recheck-fail'){
+    act=`<div class="rwbox fail-box"><div class="rwl" style="color:var(--red)">❌ Failed — ${e(st==='recheck-fail'?x.recheckBy:x.by)} · ${Fs(st==='recheck-fail'?x.recheckAt:x.at)}</div>
+    <div class="rwa"><button class="btn btn-sm btn-orange" onclick="setSt('${key}','rework')">🔄 Rework</button>
+    <button class="btn btn-sm btn-green" onclick="setSt('${key}','pass')">✅ Override</button></div></div>`;
+  }
+  const sp=st==='pass'||st==='recheck-pass'?'sp':'';
+  const sr=st==='rework'?'sr':'';const sf=st==='fail'||st==='recheck-fail'?'sf':'';
+  const btns=st!=='rework'&&st!=='fail'&&st!=='recheck-fail'?
+    `<div class="ca"><button class="${sp}" onclick="setSt('${key}','pass')">✅</button><button class="${sr}" onclick="setSt('${key}','rework')">🔄</button><button class="${sf}" onclick="setSt('${key}','fail')">❌</button></div>`:'';
+
+  let meta='';
+  if(x.by)meta+=`<div class="cm">👤 ${e(x.by)} · ${Fs(x.at)}</div>`;
+  if(x.recheckBy)meta+=`<div class="cm">🔄 ${e(x.recheckBy)} · ${Fs(x.recheckAt)}</div>`;
+
+  return `<div class="ci ${cls}"><div class="ct"><span class="cn">${item.num}</span><span class="cd">${e(item.desc)}</span>${btns}</div>${act}${meta}<div class="cc"><input placeholder="Notes..." value="${e(x.comment)}" onchange="setCmt('${key}',this.value)"></div></div>`;
+}
+
+function getI(){const el=document.getElementById('sel-insp');if(!el||!el.value){alert('Select inspector');return null;}return el.value;}
+function setSt(key,status){const i=getI();if(!i)return;const t=Tr(cId);if(!t.checks)t.checks={};const prev=(t.checks[key]||{}).status||'pending';t.checks[key]={...t.checks[key],status,by:i,at:N(),comment:(t.checks[key]||{}).comment||''};t.approved=null;t.approvedAt=null;t.history.push({key,from:prev,to:status,by:i,at:N()});sv();renderD();}
+function recheck(key,res){const i=getI();if(!i)return;const t=Tr(cId);const prev=(t.checks[key]||{}).status;const fin='recheck-'+res;t.checks[key]={...t.checks[key],status:fin,recheckBy:i,recheckAt:N()};t.approved=null;t.approvedAt=null;t.history.push({key,from:prev,to:fin,by:i,at:N()});sv();renderD();}
+function setCmt(key,v){const t=Tr(cId);if(!t.checks)t.checks={};if(!t.checks[key])t.checks[key]={};t.checks[key].comment=v;sv();}
+function approve(){if(!confirm('Final Approval by Hakan Yasar?'))return;const t=Tr(cId);t.approved='Hakan Yasar';t.approvedAt=N();t.history.push({action:'approval',by:'Hakan Yasar',at:N()});sv();renderD();}
+
+// ══════════════════════════════════════════
+// TAB: BUILDSHEET
+// ══════════════════════════════════════════
+function renderBuildsheet(t,mc){
+  mc.innerHTML=`<div class="bs-section">
+    <h3>📄 Buildsheet — ${e(t.model)}</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:8px">${e(t.customer)} · ${e(t.inv)}</p>
+    <div class="fg"><label>Build Notes / Special Options / Deviations</label>
+    <textarea id="bs-notes" rows="6" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px" onchange="saveBs()">${e(t.buildsheet||'')}</textarea></div>
+    <div class="fg"><label>Buildsheet Photos</label>
+    <div class="photo-upload" onclick="uploadBsPhoto()">📸 Tap to photograph buildsheet</div>
+    <input type="file" id="bs-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleBsPhoto(event)">
+    </div>
+    <div class="photo-grid" id="bs-photos"></div>
+  </div>`;
+  renderBsPhotos(t);
+}
+function saveBs(){const t=Tr(cId);t.buildsheet=document.getElementById('bs-notes').value;sv();}
+function uploadBsPhoto(){document.getElementById('bs-photo-input').click();}
+function handleBsPhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const t=Tr(cId);if(!t.photos)t.photos={};
+    t.photos['bs_'+Date.now()]={data:e.target.result,label:'Buildsheet',at:N()};
+    sv();renderBsPhotos(t);
+  };reader.readAsDataURL(file);
+}
+function renderBsPhotos(t){
+  const el=document.getElementById('bs-photos');if(!el)return;
+  const photos=Object.entries(t.photos||{}).filter(([k])=>k.startsWith('bs_'));
+  el.innerHTML=photos.map(([k,v])=>`<div class="photo-card"><img src="${v.data}" onclick="viewPhoto('${k}')"><div class="pc-info">${Fs(v.at)} <button class="btn btn-sm btn-danger" onclick="delPhoto('${k}')" style="padding:2px 6px;font-size:10px">×</button></div></div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// TAB: STANDARD FEATURES
+// ══════════════════════════════════════════
+function renderFeatures(t,mc){
+  const feats=FEAT[t.model]||[];
+  mc.innerHTML=`<div class="bs-section">
+    <h3>✅ Standard Features — ${e(t.model)}</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:10px">Verify these features are present on the trailer</p>
+    ${feats.length?`<ul class="feat-list">${feats.map(f=>`<li>${e(f)}</li>`).join('')}</ul>`
+    :`<p style="color:#aaa;padding:20px;text-align:center">No standard features defined for "${e(t.model)}".<br>Add them in the code or use a known model (ET 17–25).</p>`}
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// TAB: VISUAL STANDARDS
+// ══════════════════════════════════════════
+function renderStandards(t,mc){
+  const stds=[
+    {title:'Cabinet Gap Tolerance',desc:'Maximum gap between cabinet and wall: ≤ ½". Shim required if gap > ¼".',good:'Gap ≤ ¼" — flush fit',bad:'Gap > ½" — reject'},
+    {title:'Flooring Flatness',desc:'≤ ⅛" variation over 6 ft. No soft/spongy feel. No lifting edges.',good:'Flat, secure, clean',bad:'Lifting edge, gap visible'},
+    {title:'Headliner Installation',desc:'Free from wrinkles, damage. Cut straight. 2" flaps at door.',good:'Smooth, no wrinkles',bad:'Wrinkles, loose sections'},
+    {title:'Window Sealant',desc:'Butyl sealant continuous around full perimeter. No gaps.',good:'Full perimeter sealed',bad:'Gap in sealant line'},
+    {title:'Trim Fit',desc:'Trim flush against structures. No gaps or loose sections. Joints aligned.',good:'Flush, aligned joints',bad:'Gap between trim & wall'},
+    {title:'Wiring',desc:'No exposed copper or damaged insulation. Supported, no kinks. Routed per layout.',good:'Clean routing, loomed',bad:'Exposed copper, kinked'},
+    {title:'Bench/Bed Stability',desc:'No rocking. Fully supported. Handles ~200lbs. Gaps ≤ 1/16".',good:'Stable, flush mount',bad:'Rocking, visible gap'},
+    {title:'Countertop',desc:'Sits flat, no rocking. Edges aligned. Square cut corners. Free from damage.',good:'Flat, aligned edges',bad:'Rocking, misaligned'}
+  ];
+
+  mc.innerHTML=`<div style="margin-top:8px">
+    <h3 style="color:var(--navy);margin-bottom:10px">📐 Visual Quality Standards</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:12px">Reference standards for inspection. Upload example photos for each.</p>
+    ${stds.map((s,i)=>`<div class="vs-card">
+      <h3>${s.title}</h3>
+      <div class="vs-desc">${s.desc}</div>
+      <div class="vs-examples">
+        <div class="vs-ex good" style="min-height:60px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer" onclick="uploadStdPhoto('std_${i}_good','${e(s.title)} — GOOD')">
+          <div style="font-size:24px;padding:10px">✅</div><div class="vl">GOOD: ${e(s.good)}</div>
+        </div>
+        <div class="vs-ex bad" style="min-height:60px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer" onclick="uploadStdPhoto('std_${i}_bad','${e(s.title)} — REJECT')">
+          <div style="font-size:24px;padding:10px">❌</div><div class="vl">REJECT: ${e(s.bad)}</div>
+        </div>
+        ${getStdPhotos(t,i)}
+      </div>
+    </div>`).join('')}
+    <input type="file" id="std-photo-input" accept="image/*" capture="environment" style="display:none">
+  </div>`;
+}
+
+function getStdPhotos(t,idx){
+  const photos=Object.entries(t.photos||{}).filter(([k])=>k.startsWith('std_'+idx+'_'));
+  return photos.map(([k,v])=>`<div class="vs-ex ${k.includes('good')?'good':'bad'}"><img src="${v.data}" onclick="viewPhoto('${k}')"><div class="vl">${e(v.label||'')}</div></div>`).join('');
+}
+
+let pendingStdKey='',pendingStdLabel='';
+function uploadStdPhoto(key,label){
+  pendingStdKey=key;pendingStdLabel=label;
+  const inp=document.getElementById('std-photo-input');
+  inp.onchange=ev=>{
+    const file=ev.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const t=Tr(cId);if(!t.photos)t.photos={};
+      t.photos[pendingStdKey+'_'+Date.now()]={data:e.target.result,label:pendingStdLabel,at:N()};
+      sv();renderD();
+    };reader.readAsDataURL(file);
+  };
+  inp.click();
+}
+
+// ══════════════════════════════════════════
+// TAB: PHOTOS
+// ══════════════════════════════════════════
+function renderPhotos(t,mc){
+  const allPhotos=Object.entries(t.photos||{}).sort((a,b)=>(b[1].at||'').localeCompare(a[1].at||''));
+  mc.innerHTML=`<div style="margin-top:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h3 style="color:var(--navy)">📸 All Photos (${allPhotos.length})</h3>
+      <button class="btn btn-sm btn-primary" onclick="addGenPhoto()">+ Add Photo</button>
+    </div>
+    <input type="file" id="gen-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleGenPhoto(event)">
+    ${allPhotos.length?`<div class="photo-grid">${allPhotos.map(([k,v])=>`<div class="photo-card">
+      <img src="${v.data}" onclick="viewPhoto('${k}')">
+      <div class="pc-info">${e(v.label||'General')} · ${Fs(v.at)}
+      <button onclick="delPhoto('${k}')" style="float:right;background:var(--red);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer">×</button></div>
+    </div>`).join('')}</div>`:'<p style="text-align:center;color:#aaa;padding:30px">No photos yet. Use 📸 buttons in Quality Gates sections or add here.</p>'}
+  </div>`;
+}
+
+function addGenPhoto(){document.getElementById('gen-photo-input').click();}
+function handleGenPhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const t=Tr(cId);if(!t.photos)t.photos={};
+    const label=prompt('Photo label (optional):','General inspection')||'General';
+    t.photos['gen_'+Date.now()]={data:e.target.result,label,at:N()};
+    sv();renderD();
+  };reader.readAsDataURL(file);
+}
+
+function addSectionPhoto(secKey,secName){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';
+  inp.onchange=ev=>{
+    const file=ev.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const t=Tr(cId);if(!t.photos)t.photos={};
+      t.photos[secKey+'_'+Date.now()]={data:e.target.result,label:secName,at:N()};
+      sv();renderD();
+    };reader.readAsDataURL(file);
+  };inp.click();
+}
+
+function viewPhoto(key){
+  const t=Tr(cId);const p=(t.photos||{})[key];if(!p)return;
+  showMod(`<div style="text-align:center"><img src="${p.data}" style="max-width:100%;border-radius:8px"><p style="margin:8px 0;font-size:13px">${e(p.label||'')} · ${Fs(p.at)}</p><button class="btn btn-gray btn-block" onclick="closeMod()">Close</button></div>`);
+}
+function delPhoto(key){if(!confirm('Delete photo?'))return;const t=Tr(cId);delete t.photos[key];sv();renderD();}
+
+// ══════════════════════════════════════════
+// TAB: TRAILER LAYOUT
+// ══════════════════════════════════════════
+function renderLayout(t,mc){
+  const layoutPhotos=Object.entries(t.photos||{}).filter(([k])=>k.startsWith('layout_'));
+  mc.innerHTML=`<div style="margin-top:8px">
+    <h3 style="color:var(--navy);margin-bottom:8px">🗺️ Trailer Layout — ${e(t.model)}</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:12px">Upload floor plan, wiring diagram, or layout drawings for this specific trailer.</p>
+    <div class="photo-upload" onclick="addLayoutPhoto()">📸 Upload layout image / floor plan</div>
+    <input type="file" id="layout-photo-input" accept="image/*" style="display:none" onchange="handleLayoutPhoto(event)">
+    ${layoutPhotos.length?`<div class="photo-grid" style="margin-top:10px">${layoutPhotos.map(([k,v])=>`<div class="photo-card">
+      <img src="${v.data}" style="height:180px" onclick="viewPhoto('${k}')">
+      <div class="pc-info">${e(v.label||'Layout')} · ${Fs(v.at)}
+      <button onclick="delPhoto('${k}')" style="float:right;background:var(--red);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer">×</button></div>
+    </div>`).join('')}</div>`:''}
+  </div>`;
+}
+function addLayoutPhoto(){document.getElementById('layout-photo-input').click();}
+function handleLayoutPhoto(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const t=Tr(cId);if(!t.photos)t.photos={};
+    const label=prompt('Label:','Floor Plan')||'Layout';
+    t.photos['layout_'+Date.now()]={data:e.target.result,label,at:N()};
+    sv();renderD();
+  };reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════
+// ISSUES MODAL
+// ══════════════════════════════════════════
+function showIssues(type){
+  const t=Tr(cId);
+  const lbl=type==='fail'?'❌ Failed Items':'🔄 Rework Items';
+  const match=type==='fail'?s=>s==='fail'||s==='recheck-fail':s=>s==='rework';
+  let html=`<h2>${lbl}</h2>`;
+  for(const gid of GO){
+    const its=G[gid].items.filter(it=>match(iSt(t,gid,it.num)));
+    if(!its.length)continue;
+    html+=`<div style="font-weight:700;margin:10px 0 5px;color:${GC[gid]}">${GI[gid]} ${GN[gid]} (${its.length})</div>`;
+    for(const it of its){
+      const key=gid+'|'+it.num;const x=t.checks[key]||{};
+      html+=`<div style="padding:8px;background:${type==='fail'?'#ffebee':'#fff8e1'};border-radius:8px;margin:3px 0;border-left:3px solid ${type==='fail'?'var(--red)':'var(--orange)'}">
+        <strong>${it.num}</strong> — ${e(it.desc)}
+        <div style="font-size:10px;color:#888;margin:3px 0">${e(x.by||'')} · ${Fs(x.at)}</div>
+        ${type==='rework'?`<div style="display:flex;gap:5px;margin-top:5px">
+          <button class="btn btn-sm btn-green" onclick="recheckMod('${gid}','${key}','pass')">✅ Pass</button>
+          <button class="btn btn-sm btn-danger" onclick="recheckMod('${gid}','${key}','fail')">❌ Fail</button></div>`
+        :`<div style="display:flex;gap:5px;margin-top:5px">
+          <button class="btn btn-sm btn-orange" onclick="stMod('${gid}','${key}','rework')">🔄 Rework</button>
+          <button class="btn btn-sm btn-green" onclick="stMod('${gid}','${key}','pass')">✅ Override</button></div>`}
+      </div>`;
+    }
+  }
+  html+=`<button class="btn btn-gray btn-block" style="margin-top:14px" onclick="closeMod()">Close</button>`;
+  showMod(html);
+}
+function recheckMod(gid,key,res){const i=getI();if(!i)return;const t=Tr(cId);const prev=(t.checks[key]||{}).status;t.checks[key]={...t.checks[key],status:'recheck-'+res,recheckBy:i,recheckAt:N()};t.approved=null;t.approvedAt=null;t.history.push({key,from:prev,to:'recheck-'+res,by:i,at:N()});sv();renderD();showIssues(res==='fail'?'fail':'rework');}
+function stMod(gid,key,status){const i=getI();if(!i)return;const t=Tr(cId);const prev=(t.checks[key]||{}).status||'pending';t.checks[key]={...t.checks[key],status,by:i,at:N()};t.approved=null;t.approvedAt=null;t.history.push({key,from:prev,to:status,by:i,at:N()});sv();renderD();showIssues('fail');}
+
+// ══════════════════════════════════════════
+// HISTORY & UTILS
+// ══════════════════════════════════════════
+function showHist(){
+  const t=Tr(cId);const h=(t.history||[]).slice().reverse().slice(0,200);
+  let html=`<h2>📋 Log — ${e(t.customer)}</h2><p style="font-size:11px;color:#888;margin-bottom:10px">${e(t.inv)}</p>`;
+  if(!h.length)html+='<p style="color:#aaa">No entries.</p>';
+  else html+=h.map(x=>{
+    const em={pass:'✅',fail:'❌',rework:'🔄','recheck-pass':'✅♻️','recheck-fail':'❌♻️','gate-start':'▶️','gate-end':'⏹','approval':'🏆'}[x.to||x.action]||'📝';
+    const lb=x.action==='gate-start'?`Started ${GN[x.gate]||x.gate}`:x.action==='gate-end'?`Finished ${GN[x.gate]||x.gate}`:x.action==='approval'?'Final Approval':`${(x.key||'').split('|')[1]||''} → ${x.to}`;
+    return `<div class="he"><span class="ht">${Fs(x.at)}</span><span>${em} ${lb} — ${e(x.by||'')}</span></div>`;
+  }).join('');
+  html+=`<button class="btn btn-gray btn-block" style="margin-top:14px" onclick="closeMod()">Close</button>`;
+  showMod(html);
+}
+
+function delT(){const t=Tr(cId);if(!confirm('Delete '+t.customer+' — '+t.inv+'?'))return;TT=TT.filter(x=>x.id!==cId);sv();showView('list');}
+function exportData(){const b=new Blob([JSON.stringify(TT,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='escape-qg-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);}
+
+function showMod(h){$('mc').innerHTML=h;$('mo').classList.add('active');}
+function closeMod(){$('mo').classList.remove('active');}
+$('mo').onclick=ev=>{if(ev.target===$('mo'))closeMod();};
+
+renderList();
+</script>
+</body>
+</html>
