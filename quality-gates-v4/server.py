@@ -19,6 +19,8 @@ BOOTSTRAP = secrets.token_urlsafe(32)
 ROLES = {'admin', 'supervisor', 'qc', 'production'}
 DEPTS = ['Assembly', 'Carpentry', 'Electrical', 'Plumbing', 'Finishing']
 SIGNED_ACTIONS = {'pass', 'verify', 'hold-pass', 'na', 'defer', 'release', 'approve', 'transfer'}
+# Local pilot convenience. Set QG_REQUIRE_LOGIN=1 before starting to restore account login.
+AUTH_DISABLED = os.environ.get('QG_REQUIRE_LOGIN') != '1'
 
 class Problem(Exception):
     def __init__(self, message, status=400):
@@ -49,15 +51,20 @@ def signing_key():
     return path.read_bytes()
 
 def digital_signature(con, user, data, payload):
-    """Password-backed, server-sealed electronic signature receipt."""
-    row = con.execute('SELECT password FROM users WHERE id=?', (user['id'],)).fetchone()
-    password = data.get('signaturePassword', '')
-    require(row is not None and isinstance(password, str) and check_password(password, row['password']),
-            'Digital signature failed: password is incorrect', 403)
+    """Create a server-sealed approval receipt, with password verification when login is enabled."""
+    if AUTH_DISABLED:
+        require(data.get('signatureConfirmed') is True, 'Confirm the pilot signature statement')
+    else:
+        row = con.execute('SELECT password FROM users WHERE id=?', (user['id'],)).fetchone()
+        password = data.get('signaturePassword', '')
+        require(row is not None and isinstance(password, str) and check_password(password, row['password']),
+                'Digital signature failed: password is incorrect', 403)
     signed_at = time.time()
     receipt = {
         'userId': user['id'], 'name': user['name'], 'username': user['username'],
-        'role': user['role'], 'at': signed_at, 'statement': 'I approve this quality decision.'
+        'role': user['role'], 'at': signed_at,
+        'statement': ('Pilot confirmation without login authentication.' if AUTH_DISABLED else
+                      'I approve this quality decision.')
     }
     document = json.dumps({'receipt': receipt, 'payload': payload}, sort_keys=True, separators=(',', ':')).encode()
     receipt['digest'] = hashlib.sha256(document).hexdigest()
@@ -143,7 +150,8 @@ def state(con, user):
         for record in signed_records:
             if isinstance(record.get('signature'), dict):
                 record['signature']['verifiedSeal'] = signature_valid(record['signature'])
-    return dict(user=dict(user), users=users, trailers=trailers, template=dict(version=version, gates=gates), departments=DEPTS)
+    return dict(user=dict(user), users=users, trailers=trailers, template=dict(version=version, gates=gates),
+                departments=DEPTS, authRequired=not AUTH_DISABLED)
 
 def touch_operation(trailer, gate_id, user):
     activity = trailer.setdefault('operationActivity', {}).setdefault(gate_id, {
@@ -411,6 +419,10 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def auth(self, con):
+        if AUTH_DISABLED:
+            row = con.execute("SELECT id,name,username,role,department FROM users ORDER BY CASE role WHEN 'admin' THEN 0 ELSE 1 END,id LIMIT 1").fetchone()
+            require(row is not None, 'Create the first administrator with login mode enabled', 503)
+            return dict(row)
         cookies = dict(p.strip().split('=', 1) for p in self.headers.get('Cookie', '').split(';') if '=' in p)
         token = hashlib.sha256(cookies.get('qg_session', '').encode()).hexdigest()
         row = con.execute('SELECT u.id,u.name,u.username,u.role,u.department FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=? AND s.expires>?', (token, time.time())).fetchone()
@@ -426,7 +438,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, (ROOT / file).read_bytes(), mime)
             with connect() as con:
                 if path == '/api/setup':
-                    return self.send(200, {'required': not bool(con.execute('SELECT 1 FROM users').fetchone())})
+                    return self.send(200, {'required': not AUTH_DISABLED and not bool(con.execute('SELECT 1 FROM users').fetchone()),
+                                           'authRequired': not AUTH_DISABLED})
                 user = self.auth(con)
                 if path == '/api/state':
                     return self.send(200, state(con, user))

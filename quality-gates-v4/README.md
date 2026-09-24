@@ -11,7 +11,7 @@ cd "quality-gates-v4"
 python3 server.py
 ```
 
-Open http://127.0.0.1:8040 in your browser. On first launch, use the setup token printed in the terminal to create the administrator account. Passwords must contain at least 12 characters. Sign in, then use Team to create QC, production and supervisor accounts. Production users must have a department. No shared demo passwords are installed.
+Open http://127.0.0.1:8040 in your browser. The current local pilot starts without a username or password and uses the existing administrator identity. In this mode, approval confirmations are server-sealed but do not independently prove who was operating the browser. To restore account login and password-backed signatures, start with `QG_REQUIRE_LOGIN=1 python3 -B server.py`. Passwords must contain at least 12 characters. Sign in, then use Team to create QC, production and supervisor accounts. Production users must have a department. No shared demo passwords are installed.
 
 On macOS, `START-QUALITY-GATES.command` can be double-clicked to start the server and open the correct address. Do not open `index.html` directly with a `file://` address; the application needs the Python server for authentication and database access.
 

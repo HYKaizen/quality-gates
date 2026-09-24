@@ -11,6 +11,8 @@ import server as app
 
 class WorkflowTests(unittest.TestCase):
     def setUp(self):
+        self.previous_auth = app.AUTH_DISABLED
+        app.AUTH_DISABLED = False
         self.temp = tempfile.TemporaryDirectory()
         app.DB = Path(self.temp.name) / 'test.sqlite3'
         app.initialize()
@@ -34,6 +36,7 @@ class WorkflowTests(unittest.TestCase):
     def tearDown(self):
         self.con.close()
         self.temp.cleanup()
+        app.AUTH_DISABLED = self.previous_auth
 
     def get(self):
         row = self.con.execute('SELECT * FROM trailers LIMIT 1').fetchone()
@@ -165,6 +168,17 @@ class WorkflowTests(unittest.TestCase):
         hashed=app.password_hash('a long test password')
         self.assertTrue(app.check_password('a long test password', hashed))
         self.assertFalse(app.check_password('wrong', hashed))
+
+    def test_login_free_pilot_signature(self):
+        app.AUTH_DISABLED = True
+        try:
+            with self.assertRaises(app.Problem):
+                app.digital_signature(self.con, self.admin, {}, {'action': 'pass'})
+            signed = app.digital_signature(self.con, self.admin, {'signatureConfirmed': True}, {'action': 'pass'})
+            self.assertIn('without login', signed['statement'])
+            self.assertTrue(app.signature_valid(signed))
+        finally:
+            app.AUTH_DISABLED = False
 
     def test_http_auth_and_shared_state(self):
         httpd = ThreadingHTTPServer(('127.0.0.1', 0), app.Handler)

@@ -11,7 +11,7 @@ async function api(path,data){
 function input(label,name,value='',type='text'){return `<label>${esc(label)}</label><input name="${name}" type="${type}" value="${esc(value)}" required>`;}
 function select(label,name,values){return `<label>${esc(label)}</label><select name="${name}">${values.map(v=>`<option value="${esc(v.value??v)}">${esc(v.label??v)}</option>`).join('')}</select>`;}
 function note(label='Reason / evidence'){return `<label>${esc(label)}</label><textarea name="reason" required maxlength="2000"></textarea>`;}
-function signature(){return `<div class="signature-box"><strong>Digital signature</strong><p>Re-enter your password. The approval content, identity and time will be sealed in the audit record.</p>${input('Your password','signaturePassword','','password')}</div>`;}
+function signature(){return S.authRequired?`<div class="signature-box"><strong>Digital signature</strong><p>Re-enter your password. The approval content, identity and time will be sealed in the audit record.</p>${input('Your password','signaturePassword','','password')}</div>`:`<div class="signature-box"><strong>Pilot signature confirmation</strong><p>Login is temporarily disabled. This records the approval content and time, but does not independently verify the person's identity.</p><label class="checkbox"><input type="checkbox" name="signatureConfirmed" required> I confirm this quality decision</label></div>`;}
 function controlFields(i={},operation=''){
   return select('Operation','operation',S.template.gates.map(g=>({value:g.id,label:g.name})).sort((a,b)=>a.value===operation?-1:b.value===operation?1:0))+
     input('Display number','number',i.number||'')+input('Section','section',i.section||'General')+
@@ -22,7 +22,7 @@ function controlFields(i={},operation=''){
 function modal(title,fields,submit){
   $('fields').innerHTML=`<h2>${esc(title)}</h2>${fields}`;$('form-error').textContent='';$('dialog').showModal();
   $('form').onsubmit=async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;
-    try{await submit(Object.fromEntries(new FormData(e.target)));$('dialog').close();}catch(error){$('form-error').textContent=error.message;}finally{button.disabled=false;}};
+    try{const data=Object.fromEntries(new FormData(e.target));if(data.signatureConfirmed)data.signatureConfirmed=true;await submit(data);$('dialog').close();}catch(error){$('form-error').textContent=error.message;}finally{button.disabled=false;}};
 }
 $('cancel').onclick=()=>$('dialog').close();
 async function refresh(){S=await api('state');render();$('message').textContent='';}
@@ -32,7 +32,7 @@ function button(label,action,extra='',cls=''){return `<button class="${cls}" dat
 function counts(t){const items=t.gates.flatMap(g=>g.items);return {total:items.length,done:items.filter(i=>['pass','na'].includes(t.checks[i.id]?.status)).length,open:items.filter(i=>['rejected','hold','verification'].includes(t.checks[i.id]?.status)).length};}
 function nav(){return `<nav>${['trailers','work','checklist','admin','users'].filter(v=>!['admin','users'].includes(v)||can('admin')).map(v=>button({trailers:'Trailers',work:'Open work',checklist:'Checklist versions',admin:'Admin panel',users:'Team'}[v],'view',`data-view="${v}"`,view===v?'active':'')).join('')}${button('Refresh','refresh')}</nav>`;}
 function render(){
-  $('identity').innerHTML=`${esc(S.user.name)} · ${esc(S.user.role)} ${button('Sign out','logout')}`;
+  $('identity').innerHTML=`${esc(S.user.name)} · ${esc(S.user.role)}${S.authRequired?' '+button('Sign out','logout'):' · Pilot mode'}`;
   let content=nav();
   if(view==='users'){
     content+=`<div class="split"><h1>Team</h1>${button('Add user','user','','primary')}</div><div class="grid">${S.users.map(u=>`<div class="card"><h3>${esc(u.name)}</h3>${esc(u.username)}<p>${esc(u.role)} · ${esc(u.department)}</p></div>`).join('')}</div>`;
